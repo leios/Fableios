@@ -5,8 +5,7 @@ using KernelAbstractions
 using CUDA
 using AMDGPU
 
-export LolliLayer, LolliPerson, run!, postprocess!, simple_eyes, update_fis!,
-       blink!
+export LolliLayer, LolliPerson, simple_eyes, blink!, lean_head, lean_body
 
 #------------------------------------------------------------------------------#
 # Struct Definition
@@ -44,12 +43,12 @@ function dump(lolli::LolliLayer)
     println(lolli)
 end
 
-function run!(layer::LolliLayer; frame = 0)
+function Fable.run!(layer::LolliLayer; frame = 0)
     run!(layer.head; frame = frame)
     run!(layer.body; frame = frame)
 end
 
-function postprocess!(layer::LolliLayer)
+function Fable.postprocess!(layer::LolliLayer)
     postprocess!(layer.head)
     postprocess!(layer.body)
 
@@ -63,11 +62,11 @@ function postprocess!(layer::LolliLayer)
     end
 end
 
-function to_canvas!(layer::LolliLayer, canvas_params::CopyToCanvas)
+function Fable.to_canvas!(layer::LolliLayer, canvas_params::CopyToCanvas)
     to_canvas!(layer)
 end
 
-function to_canvas!(layer::LolliLayer)
+function Fable.to_canvas!(layer::LolliLayer)
 
     if layer.params.ArrayType <: Array
         kernel! = lolli_copy_kernel!(CPU(), layer.params.numcores)
@@ -94,7 +93,7 @@ end
     end
 end
 
-function zero!(layer::LolliLayer)
+function Fable.zero!(layer::LolliLayer)
     zero!(layer.head)
     zero!(layer.body)
     zero!(layer.canvas)
