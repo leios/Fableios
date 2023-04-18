@@ -1,0 +1,4 @@
+name = "LolliPeople"
+uuid = "fd0a0dcd-a5c9-490a-97af-c3ca9ad3f235"
+authors = ["James Schloss <jrs.schloss@gmail.com>"]
+version = "0.1.0"
