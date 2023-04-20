@@ -12,7 +12,8 @@ function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
                     postprocessing_steps = Vector{AbstractPostProcess}([]),
                     eye_fum::Union{FractalUserMethod, Nothing} = nothing,
                     head_smears = Vector{FractalOperator}([]),
-                    body_smears = Vector{FractalOperator}([]))
+                    body_smears = Vector{FractalOperator}([]),
+                    additional_fis = Vector{FractalInput}([]))
 
     H2_head = nothing
     H2_body = nothing
@@ -32,7 +33,9 @@ function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
     end
 
     if eye_fum == nothing
-        eye_fum = simple_eyes(height = height)
+        eye_fum = simple_eyes(head_position = head_position,
+                              inter_eye_distance = height * 0.15,
+                              size = height*0.08)
     end
 
     postprocessing_steps = vcat([CopyToCanvas()], postprocessing_steps)
@@ -65,6 +68,6 @@ function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
                       height, body_color, nothing, nothing, nothing,
                       canvas, layer_position, world_size, ppu,
                       params(LolliLayer; ArrayType = ArrayType),
-                      postprocessing_steps)
+                      postprocessing_steps, additional_fis)
     
 end

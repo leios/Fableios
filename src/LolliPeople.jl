@@ -28,6 +28,7 @@ mutable struct LolliLayer <: AbstractLayer
     ppu::Number
     params::NamedTuple
     postprocessing_steps::Vector{APP} where APP <: AbstractPostProcess
+    additional_fis::Vector{FractalInput}
 end
 
 LolliPerson(args...; kwargs...) = LolliLayer(args...; kwargs...)
@@ -36,7 +37,7 @@ include("fable_interface.jl")
 
 include("skins/simple.jl")
 
-include("animations/lean.jl")
+include("animations/movements.jl")
 
 include("constructor.jl")
 end
