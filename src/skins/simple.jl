@@ -1,18 +1,19 @@
 export simple_eyes, blink!
 
 simple_eyes = @fum color function simple_eyes(x, y;
-                                              head_position = (-0.25, 0.0),
+                                              size = 1.0,
+                                              head_position = (-0.25*size, 0.0),
                                               ellipticity = 2.5,
                                               location = (0.0, 0.0),
-                                              inter_eye_distance = 0.150,
+                                              inter_eye_distance = 0.150*size,
                                               eye_color=RGBA{Float32}(1,1,1,1),
-                                              size = 0.08,
+                                              eye_size = size*0.08,
                                               show_brows = false,
                                               brow_angle = 0.0,
                                               brow_size = (0.3, 1.25),
                                               brow_height = 1.0)
     location = location .+ head_position
-    r2 = size*0.5
+    r2 = eye_size*0.5
     r1 = ellipticity*r2
     y_height = location[1] + r1 - 2*r1 * brow_height
     if y >= y_height
@@ -23,7 +24,7 @@ simple_eyes = @fum color function simple_eyes(x, y;
     end
 
     if Bool(show_brows)
-        brow_size = brow_size .* size
+        brow_size = brow_size .* eye_size
         brow_x = 0.5*inter_eye_distance + brow_size[2]*0.1
         if in_rectangle(x, y, (y_height-brow_size[1]*0.5, brow_x),
                         brow_angle, brow_size[2], brow_size[1]) ||

@@ -15,7 +15,7 @@ function lean_example(num_particles, num_iterations;
                            foot_position = (height*0.5,0.0),
                            lean_velocity = lean_velocity,
                            lean_angle = lean_angle))
-    lolli = LolliPerson(height; 
+    lolli = LolliPerson(size = height, 
                         ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,

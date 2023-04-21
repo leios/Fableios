@@ -13,7 +13,7 @@ function jump_example(num_particles, num_iterations;
         body_fo = fo(jump_smear(height = height,
                                 foot_position = (height*0.5,0.0),
                                 stretch_factor = stretch_factor))
-        lolli = LolliPerson(height; 
+        lolli = LolliPerson(size = height,
                             ArrayType = ArrayType,
                             num_particles = num_particles,
                             num_iterations = num_iterations,

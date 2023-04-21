@@ -6,7 +6,7 @@ function rotate_example(num_particles, num_iterations; num_frames = 10,
     res = (1080, 1920)
     rotation = fi("rotation", 0.0)
     rotation_fo = fo(rotate(angle = rotation))
-    lolli = LolliPerson(height; ArrayType = ArrayType,
+    lolli = LolliPerson(size = height, ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,
                         head_smears = [rotation_fo],
@@ -21,3 +21,7 @@ function rotate_example(num_particles, num_iterations; num_frames = 10,
 
     close_video(video_out)
 end
+
+@info("Created function rotate_example(num_particles, num_iterations;
+                                      ArrayType = Array, num_frames = 10,
+                                      height = 0.5)\n")

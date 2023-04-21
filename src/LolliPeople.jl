@@ -12,15 +12,7 @@ mutable struct LolliLayer <: AbstractLayer
     eyes::Union{Nothing, FractalUserMethod}
     body::FractalLayer
 
-    angle::Union{FT, FractalInput} where FT <: Number
-    foot_position::Union{Tuple, FractalInput}
-    head_height::Union{FT, FractalInput} where FT <: Number
-
     body_color::FractalUserMethod
-
-    transform::Union{Nothing, FractalUserMethod}
-    head_transform::Union{Nothing, FractalUserMethod}
-    body_transform::Union{Nothing, FractalUserMethod}
 
     canvas::Union{Array{C}, CuArray{C}, ROCArray{C}} where C <: RGBA
     position::Tuple

@@ -1,19 +1,71 @@
 export LolliLayer, LolliPerson
 
-function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
-                    body_multiplier = min(1, height),
-                    eye_color = Shaders.white, body_color = Shaders.black,
-                    head_position = (-height*1/4, 0.0),
-                    head_radius = height*0.25,
-                    name = "", ArrayType = Array,
-                    known_operations = [],
-                    ppu = 1200, world_size = (0.9, 1.6),
-                    num_particles = 1000, num_iterations = 1000,
-                    postprocessing_steps = Vector{AbstractPostProcess}([]),
-                    eye_fum::Union{FractalUserMethod, Nothing} = nothing,
-                    head_smears = Vector{FractalOperator}([]),
-                    body_smears = Vector{FractalOperator}([]),
-                    additional_fis = Vector{FractalInput}([]))
+
+function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
+                ArrayType = Array, FloatType = Float32,
+                logscale = false, gamma = 2.2, calc_max_value = false,
+                max_value = 1, num_ignore = 20, num_particles = 1000,
+                num_iterations = 1000, dims = 2, solver_type = :random,
+                head_position = (-0.25*size, 0.0), head_radius = size*0.25,
+                foot_position = (0.5*size, 0.0), body_scale_x = 0.1*size,
+                body_scale_y = 0.45*size, body_position = (0.275*size, 0.0))
+
+    return (numthreads = numthreads,
+            numcores = numcores,
+            ArrayType = ArrayType,
+            FloatType = FloatType,
+            logscale = logscale,
+            gamma = gamma,
+            max_value = max_value,
+            calc_max_value = calc_max_value,
+            num_ignore = num_ignore,
+            num_particles = num_particles,
+            num_iterations = num_iterations,
+            dims = dims,
+            solver_type = solver_type,
+            head_position = head_position,
+            head_radius = head_radius,
+            foot_position = foot_position,
+            body_scale_x = body_scale_x,
+            body_scale_y = body_scale_y,
+            body_position = body_position)
+end
+
+function LolliLayer(; size = 1.0,
+                      head_position = (-0.25*size, 0.0),
+                      head_radius = size*0.25,
+                      foot_position = (0.5*size, 0.0),
+                      body_scale_x = 0.1*size,
+                      body_scale_y = 0.45*size,
+                      body_position = (0.275*size, 0.0),
+                      body_color = Shaders.black,
+                      ArrayType = Array,
+                      ppu = 1200,
+                      world_size = (0.9, 1.6),
+                      num_particles = 1000,
+                      num_iterations = 1000,
+                      postprocessing_steps = Vector{AbstractPostProcess}([]),
+                      eye_fum::Union{FractalUserMethod, Nothing} = nothing,
+                      head_smears = Vector{FractalOperator}([]),
+                      body_smears = Vector{FractalOperator}([]),
+                      additional_fis = Vector{FractalInput}([]),
+                      set_as_fis = false)
+    if set_as_fis
+        head_position = fi(:head_position, value(head_po)sition)
+        head_radius = fi(:head_radius, value(head_radius))
+        foot_position = fi(:foot_position, value(foot_position))
+        body_scale_x = fi(:body_scale_x, value(body_scale_x)[2])
+        body_scale_y = fi(:body_scale_y, value(body_scale_y)[1])
+        body_position = fi(:body_position, value(body_position))
+    end
+
+    p = params(LolliLayer; ArrayType = ArrayType,
+                           head_position = head_position,
+                           head_radius = head_radius,
+                           foot_position = foot_position,
+                           body_scale_x = body_scale_x,
+                           body_scale_y = body_scale_y,
+                           body_position = body_position)
 
     H2_head = nothing
     H2_body = nothing
@@ -34,17 +86,16 @@ function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
 
     if eye_fum == nothing
         eye_fum = simple_eyes(head_position = head_position,
-                              inter_eye_distance = height * 0.15,
-                              size = height*0.08)
+                              inter_eye_distance = size * 0.15,
+                              size = size)
     end
 
     postprocessing_steps = vcat([CopyToCanvas()], postprocessing_steps)
-    offset = 0.1*body_multiplier
-    layer_position = (foot_position[1] - height*0.5, foot_position[2])
-    body = define_rectangle(; position = foot_position .- (height*0.25, 0),
+    layer_position = (foot_position[1] - size*0.5, foot_position[2])
+    body = define_rectangle(; position = body_position,
                               rotation = 0.0,
-                              scale_x = 0.1*body_multiplier,
-                              scale_y = 0.5*height-offset,
+                              scale_x = body_scale_x,
+                              scale_y = body_scale_y,
                               color = body_color)
 
     body_layer = FractalLayer(num_particles = num_particles,
@@ -64,10 +115,9 @@ function LolliLayer(height; angle=0.0, foot_position=(height*0.5,0.0),
                               H1 = head, H2 = H2_head)
 
     canvas = copy(head_layer.canvas)
-    return LolliLayer(head_layer, eye_fum, body_layer, angle, foot_position,
-                      height, body_color, nothing, nothing, nothing,
-                      canvas, layer_position, world_size, ppu,
-                      params(LolliLayer; ArrayType = ArrayType),
+    return LolliLayer(head_layer, eye_fum, body_layer, body_color,
+                      canvas, layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
-    
+
+
 end
