@@ -6,9 +6,10 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
                 logscale = false, gamma = 2.2, calc_max_value = false,
                 max_value = 1, num_ignore = 20, num_particles = 1000,
                 num_iterations = 1000, dims = 2, solver_type = :random,
+                size = 1.0,
                 head_position = (-0.25*size, 0.0), head_radius = size*0.25,
-                foot_position = (0.5*size, 0.0), body_scale_x = 0.1*size,
-                body_scale_y = 0.45*size, body_position = (0.275*size, 0.0))
+                foot_position = (0.5*size, 0.0), body_width = 0.1*size,
+                body_height = 0.45*size, body_position = (0.275*size, 0.0))
 
     return (numthreads = numthreads,
             numcores = numcores,
@@ -23,11 +24,12 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
             num_iterations = num_iterations,
             dims = dims,
             solver_type = solver_type,
+            size = size,
             head_position = head_position,
             head_radius = head_radius,
             foot_position = foot_position,
-            body_scale_x = body_scale_x,
-            body_scale_y = body_scale_y,
+            body_width = body_width,
+            body_height = body_height,
             body_position = body_position)
 end
 
@@ -35,8 +37,8 @@ function LolliLayer(; size = 1.0,
                       head_position = (-0.25*size, 0.0),
                       head_radius = size*0.25,
                       foot_position = (0.5*size, 0.0),
-                      body_scale_x = 0.1*size,
-                      body_scale_y = 0.45*size,
+                      body_width = 0.1*size,
+                      body_height = 0.45*size,
                       body_position = (0.275*size, 0.0),
                       body_color = Shaders.black,
                       ArrayType = Array,
@@ -54,8 +56,8 @@ function LolliLayer(; size = 1.0,
         head_position = fi(:head_position, value(head_po)sition)
         head_radius = fi(:head_radius, value(head_radius))
         foot_position = fi(:foot_position, value(foot_position))
-        body_scale_x = fi(:body_scale_x, value(body_scale_x)[2])
-        body_scale_y = fi(:body_scale_y, value(body_scale_y)[1])
+        body_width = fi(:body_width, value(body_width)[2])
+        body_height = fi(:body_height, value(body_height)[1])
         body_position = fi(:body_position, value(body_position))
     end
 
@@ -63,8 +65,8 @@ function LolliLayer(; size = 1.0,
                            head_position = head_position,
                            head_radius = head_radius,
                            foot_position = foot_position,
-                           body_scale_x = body_scale_x,
-                           body_scale_y = body_scale_y,
+                           body_width = body_width,
+                           body_height = body_height,
                            body_position = body_position)
 
     H2_head = nothing
@@ -94,8 +96,8 @@ function LolliLayer(; size = 1.0,
     layer_position = (foot_position[1] - size*0.5, foot_position[2])
     body = define_rectangle(; position = body_position,
                               rotation = 0.0,
-                              scale_x = body_scale_x,
-                              scale_y = body_scale_y,
+                              scale_x = body_width,
+                              scale_y = body_height,
                               color = body_color)
 
     body_layer = FractalLayer(num_particles = num_particles,

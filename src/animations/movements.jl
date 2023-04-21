@@ -1,41 +1,65 @@
-export rotate, translate, lean_head, lean_body, jump_smear, bounce!
+export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!
 
 jump_smear = @fum function jump_smear(x, y; foot_position = (0.0, 0.0),
                                       stretch_factor = 1.0,
-                                      height = 1.0,
+                                      body_height = 1.0,
                                       jump_height = 0.0)
-    y = stretch_factor*(y - foot_position[1]) + jump_height + foot_position[1]
-    stretch_factor = abs(stretch_factor)
-    if stretch_factor > 1.0
-        x *= 1/stretch_factor
-    elseif stretch_factor < 1.0
-        temp_y = abs(y-foot_position[1]-height*0.5)
-        factor = (1+height*0.25)/(temp_y+1)
-        x = (x - foot_position[2])*factor + foot_position[2]
-    end
+    y += (stretch_factor*(y - foot_position[1])/body_height) - 
+         (jump_height*(1-(foot_position[1] - y)/body_height))
+    x *= 1/(1+2*(stretch_factor - jump_height))
     return point(y, x)
 end
 
-function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame)
+function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
+                 max_bounce_height = 0.1*lolli.params.size)
 
-    factor = 1+sin(2*pi*curr_frame/(end_frame - start_frame))*0.25
+    factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_bounce_height
+    dfactor = factor-(sin(2*pi*(curr_frame-1)/
+                               (end_frame - start_frame))*max_bounce_height)
+
     stretch_factor_idx = find_fi_index(:stretch_factor, lolli.additional_fis)
     if isnothing(stretch_factor_idx)
         @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
     end
 
     stretch_factor = lolli.additional_fis[stretch_factor_idx]
-    set!(stretch_factor,
-         value(stretch_factor)*factor)
+    set!(stretch_factor, factor)
 
     head_position_idx = find_fi_index(:position, lolli.head.H1.fis[1])
 
     head_position = lolli.head.H1.fis[1][head_position_idx]
-    set!(head_position, (value(head_position)[1]*factor,
+    set!(head_position, (value(head_position)[1]-dfactor,
                          value(head_position)[2]))
 end
 
-function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame)
+function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
+               max_jump_height = 0.1*lolli.params.size)
+
+    factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_jump_height
+    dfactor = factor-(sin(2*pi*(curr_frame-1)/
+                               (end_frame - start_frame))*max_jump_height)
+    
+    stretch_factor_idx = find_fi_index(:stretch_factor, lolli.additional_fis)
+    if isnothing(stretch_factor_idx)
+        @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
+    end
+
+    stretch_factor = lolli.additional_fis[stretch_factor_idx]
+    set!(stretch_factor, factor)
+
+    jump_height_idx = find_fi_index(:jump_height, lolli.additional_fis)
+    if isnothing(jump_height_idx)
+        @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
+    end
+
+    jump_height = lolli.additional_fis[jump_height_idx]
+    set!(jump_height, max(0.0, factor - 0.5*max_jump_height))
+
+    head_position_idx = find_fi_index(:position, lolli.head.H1.fis[1])
+
+    head_position = lolli.head.H1.fis[1][head_position_idx]
+    set!(head_position, (value(head_position)[1]-dfactor,
+                         value(head_position)[2]))
 
 end
 
