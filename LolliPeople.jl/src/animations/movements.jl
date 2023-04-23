@@ -1,5 +1,28 @@
 export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!
 
+#------------------------------------------------------------------------------#
+# Transforms
+#------------------------------------------------------------------------------#
+
+rotate = @fum function rotate(x, y; angle = 0.0, pivot = (0,0),
+                              translation = (0,0))
+    y_temp = y - pivot[1]
+    x_temp = x - pivot[2]
+
+    y = x_temp*sin(angle) + y_temp*cos(angle) + pivot[1] + translation[1]
+    x = x_temp*cos(angle) - y_temp*sin(angle) + pivot[2] + translation[2]
+
+    return point(y,x)
+end
+
+translate = @fum function translate(x, y; translation = (0,0))
+    return point(y + translation[1], x + translation[2])
+end
+
+#------------------------------------------------------------------------------#
+# Jump / Bounce
+#------------------------------------------------------------------------------#
+
 jump_smear = @fum function jump_smear(x, y; foot_position = (0.0, 0.0),
                                       stretch_factor = 1.0,
                                       body_height = 1.0,
@@ -63,20 +86,9 @@ function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
 
 end
 
-rotate = @fum function rotate(x, y; angle = 0.0, pivot = (0,0),
-                              translation = (0,0))
-    y_temp = y - pivot[1]
-    x_temp = x - pivot[2]
-
-    y = x_temp*sin(angle) + y_temp*cos(angle) + pivot[1] + translation[1]
-    x = x_temp*cos(angle) - y_temp*sin(angle) + pivot[2] + translation[2]
-
-    return point(y,x)
-end
-
-translate = @fum function translate(x, y; translation = (0,0))
-    return point(y + translation[1], x + translation[2])
-end
+#------------------------------------------------------------------------------#
+# Lean
+#------------------------------------------------------------------------------#
 
 lean_head = @fum function lean_head(x, y;
                                     foot_position = (0.0, 0.0),
@@ -112,5 +124,122 @@ lean_body = @fum function lean_body(x, y;
     y = y_temp + foot_position[1]
 
     return point(y,x)
+end
+
+#------------------------------------------------------------------------------#
+# Step / Walk
+#------------------------------------------------------------------------------#
+
+# TODO
+leap_head = @fum function leap_head(x, y, frame; start_frame = 0, end_frame = 1,
+                                    head_position = (0,0),
+                                    warmup = false, cooldown = false,
+                                    jump_height = 0.5
+                                    p1 = (0,0), p2 = (0,0))
+
+    if frame < start_frame
+        return point(y, x)
+    end
+
+    max_shrink_height = 0.25 + 0.75*(1/(2^(jump_height / body_height)))
+    if warmup
+        stretch_factor = 1 - max_shrink_height*(frame-start_frame) /
+                             (end_frame - start_frame)
+        y = y - head_position + stretch_factor*body_height + p1[1]
+        return point(y, x+p1[2])
+    elseif cooldown
+        stretch_factor = 0.25 + max_shrink_height*((frame-start_frame) /
+                                (end_frame - start_frame))
+        y = y - head_position + stretch_factor*body_height + p1[1]
+        return point(y, x+p2[2])
+    else
+        stretch_factor = 0.25 + max_shrink_height
+        sin_val = sin(2*pi*(frame - start_frame) / (end_frame - start_frame))
+        stretch_factor += abs(sin_val)* 0.5*(1-stretch_factor)
+        max_angle = 0.5*pi*(p2[2] - p1[2])/body_height
+        lean_angle = max_angle*sin_val
+        lean_velocity = 0.0
+        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
+        x *= 1/stretch_factor
+
+        return lean_head_fum(y, x, frame; height = stretch_factor,
+                                          lean_angle = lean_angle,
+                                          foot_position = foot_position,
+                                          lean_velocity = lean_velocity)
+
+
+    end
+end
+
+leap_body = @fum function leap_body(x, y, frame; start_frame = 0, end_frame = 1,
+                                    foot_position = (0,0),
+                                    warmup = false, cooldown = false,
+                                    body_height = 1.0, jump_height = 0.5
+                                    p1 = (0,0), p2 = (0,0))
+
+    if frame < start_frame
+        return point(y, x)
+    end
+
+    max_shrink_height = 0.75*(1/(2^(jump_height / body_height)))
+    if warmup
+        stretch_factor = 1 - max_shrink_height*(frame-start_frame) /
+                             (end_frame - start_frame)
+        y = (stretch_factor*(y - foot_position[1])/body_height) + p1[1]
+        x *= 1/stretch_factor
+        return point(y, x+p1[2])
+    elseif cooldown
+        stretch_factor = 0.25 + max_shrink_height*((frame-start_frame) /
+                                (end_frame - start_frame))
+        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
+        x *= 1/stretch_factor
+        return point(y, x+p2[2])
+    else
+        stretch_factor = 0.25 + max_shrink_height
+        sin_val = sin(2*pi*(frame - start_frame) / (end_frame - start_frame))
+        stretch_factor += abs(sin_val)* 0.5*(1-stretch_factor)
+        max_angle = 0.5*pi*(p2[2] - p1[2])/body_height
+        lean_angle = max_angle*sin_val
+        lean_velocity = 0.0
+        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
+        x *= 1/stretch_factor
+
+        return lean_body_fum(y, x, frame; height = stretch_factor,
+                                          lean_angle = lean_angle,
+                                          foot_position = foot_position,
+                                          lean_velocity = lean_velocity)
+
+
+    end
+    
+end
+
+function step!(lolli::LolliLayer, p1, p2, curr_frame, start_frame, end_frame;
+               startup_frames = Fable.FPS*0.5)
+
+    if curr_frame < start_frame
+        return
+    end
+
+    if startup_frames > 0
+        
+    end
+end
+
+function walk!(lolli::LolliLayer, p1, p2, curr_frame, start_frame, end_frame,
+               num_steps; startup_frames = Fable.FPS*0.5)
+    if curr_frame < start_frame
+       return
+    end
+
+#=
+    curr_frame -= start_frame
+    interval = (end_frame - start_frame)/num_steps
+    for ...
+        step!(lolli, p1, p2, curr_frame, curr_frame % interval,
+              start_frame + interval*(i-1), start_frame+interval*i;
+              startup_frames = 0
+=#
+
 end
 
