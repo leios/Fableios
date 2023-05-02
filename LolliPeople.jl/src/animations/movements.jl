@@ -1,4 +1,5 @@
-export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!
+export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!,
+       set_walk_transforms!, walk!
 
 #------------------------------------------------------------------------------#
 # Transforms
@@ -130,116 +131,108 @@ end
 # Step / Walk
 #------------------------------------------------------------------------------#
 
-# TODO
-leap_head = @fum function leap_head(x, y, frame; start_frame = 0, end_frame = 1,
-                                    head_position = (0,0),
-                                    warmup = false, cooldown = false,
-                                    jump_height = 0.5
-                                    p1 = (0,0), p2 = (0,0))
+crouch = @fum function crouch(x, y, frame; foot_position = (0,0), head = false,
+                              reverse = false, shrink_factor = 1,
+                              start_frame = 1, end_frame = 1,
+                              translation = (0,0), body_height = 0.5)
+    if end_frame > start_frame && frame >= start_frame
+        if reverse
+            shrink_factor = 1-(1-shrink_factor)*
+                            (frame-start_frame)/(end_frame - start_frame)
+        else
+            shrink_factor += (1-shrink_factor)*
+                             (frame-start_frame)/(end_frame - start_frame)
+        end
 
-    if frame < start_frame
+        y += (shrink_factor*(y - foot_position[1])/body_height) + translation[1]
+
+        if head
+            x += translation[2]
+        else
+            x = x*min(2,1/shrink_factor) + translation[2]
+        end
+
+        return point(y+translation[1],x)
+    else
         return point(y, x)
     end
+end
 
-    max_shrink_height = 0.25 + 0.75*(1/(2^(jump_height / body_height)))
-    if warmup
-        stretch_factor = 1 - max_shrink_height*(frame-start_frame) /
-                             (end_frame - start_frame)
-        y = y - head_position + stretch_factor*body_height + p1[1]
-        return point(y, x+p1[2])
+leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
+                          p1 = (0,0), p2 = (0,0), jump_height = 0)
+
+    p = (p1[1]+(p2[1] .- p1[1])*(frame - start_frame)/(end_frame - start_frame),
+         p1[2]+(p2[2] .- p1[2])*(frame - start_frame)/(end_frame - start_frame))
+
+    return point(p[1], p[2])
+end
+
+function set_walk_transforms!(lolli::LolliLayer; startup = false,
+                                                 cooldown = false,
+                                                 start_frame = 0,
+                                                 end_frame = 0,
+                                                 p1 = (0,0),
+                                                 p2 = (0,0),
+                                                 jump_height = 0.5)
+    max_shrink = 0.25 + 0.75*(1/(2^(jump_height / lolli.params.body_height)))
+    println(max_shrink, '\t', cooldown, '\t', startup)
+    if startup && cooldown
+        error("Cannot use both startup and cooldown for walk transforms!")
+    elseif startup
+        set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
+                                      shrink_factor = max_shrink,
+                                      start_frame = start_frame,
+                                      end_frame = end_frame,
+                                      translation = p1,
+                                      body_height = lolli.params.body_height);
+                        layer = :body)
+        set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
+                                      shrink_factor = max_shrink,
+                                      head = true,
+                                      start_frame = start_frame,
+                                      end_frame = end_frame,
+                                      translation = p1,
+                                      body_height = lolli.params.body_height);
+                        layer = :head)
     elseif cooldown
-        stretch_factor = 0.25 + max_shrink_height*((frame-start_frame) /
-                                (end_frame - start_frame))
-        y = y - head_position + stretch_factor*body_height + p1[1]
-        return point(y, x+p2[2])
+        set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
+                                      shrink_factor = max_shrink,
+                                      reverse = true,
+                                      start_frame = start_frame,
+                                      end_frame = end_frame,
+                                      translation = p2,
+                                      body_height = lolli.params.body_height);
+                        layer = :body)
+        set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
+                                      shrink_factor = max_shrink,
+                                      head = true,
+                                      reverse = true,
+                                      start_frame = start_frame,
+                                      end_frame = end_frame,
+                                      translation = p2,
+                                      body_height = lolli.params.body_height);
+                        layer = :head)
     else
-        stretch_factor = 0.25 + max_shrink_height
-        sin_val = sin(2*pi*(frame - start_frame) / (end_frame - start_frame))
-        stretch_factor += abs(sin_val)* 0.5*(1-stretch_factor)
-        max_angle = 0.5*pi*(p2[2] - p1[2])/body_height
-        lean_angle = max_angle*sin_val
-        lean_velocity = 0.0
-        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
-        x *= 1/stretch_factor
-
-        return lean_head_fum(y, x, frame; height = stretch_factor,
-                                          lean_angle = lean_angle,
-                                          foot_position = foot_position,
-                                          lean_velocity = lean_velocity)
-
-
-    end
-end
-
-leap_body = @fum function leap_body(x, y, frame; start_frame = 0, end_frame = 1,
-                                    foot_position = (0,0),
-                                    warmup = false, cooldown = false,
-                                    body_height = 1.0, jump_height = 0.5
-                                    p1 = (0,0), p2 = (0,0))
-
-    if frame < start_frame
-        return point(y, x)
-    end
-
-    max_shrink_height = 0.75*(1/(2^(jump_height / body_height)))
-    if warmup
-        stretch_factor = 1 - max_shrink_height*(frame-start_frame) /
-                             (end_frame - start_frame)
-        y = (stretch_factor*(y - foot_position[1])/body_height) + p1[1]
-        x *= 1/stretch_factor
-        return point(y, x+p1[2])
-    elseif cooldown
-        stretch_factor = 0.25 + max_shrink_height*((frame-start_frame) /
-                                (end_frame - start_frame))
-        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
-        x *= 1/stretch_factor
-        return point(y, x+p2[2])
-    else
-        stretch_factor = 0.25 + max_shrink_height
-        sin_val = sin(2*pi*(frame - start_frame) / (end_frame - start_frame))
-        stretch_factor += abs(sin_val)* 0.5*(1-stretch_factor)
-        max_angle = 0.5*pi*(p2[2] - p1[2])/body_height
-        lean_angle = max_angle*sin_val
-        lean_velocity = 0.0
-        y = (stretch_factor*(y - foot_position[1])/body_height) + p2[1]
-        x *= 1/stretch_factor
-
-        return lean_body_fum(y, x, frame; height = stretch_factor,
-                                          lean_angle = lean_angle,
-                                          foot_position = foot_position,
-                                          lean_velocity = lean_velocity)
-
-
-    end
-    
-end
-
-function step!(lolli::LolliLayer, p1, p2, curr_frame, start_frame, end_frame;
-               startup_frames = Fable.FPS*0.5)
-
-    if curr_frame < start_frame
-        return
-    end
-
-    if startup_frames > 0
-        
-    end
-end
-
-function walk!(lolli::LolliLayer, p1, p2, curr_frame, start_frame, end_frame,
-               num_steps; startup_frames = Fable.FPS*0.5)
-    if curr_frame < start_frame
-       return
-    end
-
 #=
-    curr_frame -= start_frame
-    interval = (end_frame - start_frame)/num_steps
-    for ...
-        step!(lolli, p1, p2, curr_frame, curr_frame % interval,
-              start_frame + interval*(i-1), start_frame+interval*i;
-              startup_frames = 0
+        set_transforms!(lolli, [lean(),
+                                leap(foot_position = lolli.params.foot_position,
+                                     shrink_factor = max_shrink,
+                                     reverse = true,
+                                     start_frame = start_frame,
+                                     end_frame = end_frame)];
+                        layer = :body)
+        set_transforms!(lolli, [lean(),
+                                leap(foot_position = lolli.params.foot_position,
+                                     shrink_factor = max_shrink,
+                                     head = true,
+                                     reverse = true,
+                                     start_frame = start_frame,
+                                     end_frame = end_frame)];
+                        layer = :head)
 =#
+    end
 
 end
 
+function walk!(lolli::LolliLayer)
+end

@@ -1,7 +1,7 @@
 using Fable, Images, LolliPeople
 
 function lean_example(num_particles, num_iterations;
-                      height = 2.0, ArrayType = Array, num_frames = 10)
+                      height = 0.5, ArrayType = Array, num_frames = 10)
     bg = ColorLayer(RGBA(0.5, 0.5, 0.5, 1); ArrayType = ArrayType)
     res = (1080, 1920)
 
@@ -39,5 +39,5 @@ function lean_example(num_particles, num_iterations;
 end
 
 @info("Created function lean_example(num_particles, num_iterations;
-                                    height = 2.0, brow_height = 0.5,
+                                    height = 0.5, brow_height = 0.5,
                                     ArrayType = Array, num_frames = 10)")
