@@ -131,31 +131,33 @@ end
 # Step / Walk
 #------------------------------------------------------------------------------#
 
-crouch = @fum function crouch(x, y, frame; foot_position = (0,0), head = false,
+crouch = @fum function crouch(y, x, frame; foot_position = (0,0), head = false,
                               reverse = false, shrink_factor = 1,
                               start_frame = 1, end_frame = 1,
                               translation = (0,0), body_height = 0.5)
-    if end_frame > start_frame && frame >= start_frame
+    if start_frame <= frame <= end_frame
         if reverse
-            shrink_factor = 1-(1-shrink_factor)*
-                            (frame-start_frame)/(end_frame - start_frame)
+            shrink_factor = (1-shrink_factor)*
+                            (1-(frame-start_frame)/(end_frame - start_frame))
         else
-            shrink_factor += (1-shrink_factor)*
-                             (frame-start_frame)/(end_frame - start_frame)
+            shrink_factor = (1-shrink_factor)*
+                            (frame-start_frame)/(end_frame - start_frame)
         end
 
-        y += (shrink_factor*(y - foot_position[1])/body_height) + translation[1]
+        if head
+            y += shrink_factor*body_height
+        else
+            y -= ((y - foot_position[1]))*shrink_factor
+        end
 
         if head
             x += translation[2]
         else
-            x = x*min(2,1/shrink_factor) + translation[2]
+            x = x*min(1.5,1/(1-shrink_factor)) + translation[2]
         end
 
-        return point(y+translation[1],x)
-    else
-        return point(y, x)
     end
+    return point(y, x)
 end
 
 leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,

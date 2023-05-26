@@ -26,8 +26,8 @@ function Fable.to_canvas!(layer::LolliLayer)
     backend = get_backend(layer.canvas)
     kernel! = lolli_copy_kernel!(backend, layer.params.numthreads)
 
-    wait(kernel!(layer.canvas, layer.head.canvas, layer.body.canvas;
-                 ndrange = size(layer.canvas)))
+    kernel!(layer.canvas, layer.head.canvas, layer.body.canvas;
+            ndrange = size(layer.canvas))
     
     return nothing
 end
