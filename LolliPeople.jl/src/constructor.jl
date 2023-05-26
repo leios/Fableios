@@ -130,8 +130,9 @@ function set_transforms!(lolli::LolliLayer, fum::FractalUserMethod;
                     additional_fis = additional_fis)
 end
 
-function set_transforms!(lolli::LolliLayer, fums::Vector{FractalUserMethod};
-                         layer = :both, additional_fis = FractalInput[])
+function set_transforms!(lolli::LolliLayer, fums::Vector{FUM};
+                         additional_fis = FractalInput[],
+                         layer = :both) where FUM <: FractalUserMethod
     set_transforms!(lolli,
                     [fo(fums[i], Shaders.previous) for i = 1:length(fums)];
                     layer = layer, additional_fis = additional_fis)

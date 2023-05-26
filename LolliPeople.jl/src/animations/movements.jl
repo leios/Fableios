@@ -1,5 +1,5 @@
 export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!,
-       set_walk_transforms!, walk!
+       set_walk_transforms!
 
 #------------------------------------------------------------------------------#
 # Transforms
@@ -161,12 +161,22 @@ crouch = @fum function crouch(y, x, frame; foot_position = (0,0), head = false,
 end
 
 leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
-                          p1 = (0,0), p2 = (0,0), jump_height = 0)
+                          p1 = (0,0), p2 = (0,0), jump_height = 0, 
+                          foot_position = (0,0))
 
-    p = (p1[1]+(p2[1] .- p1[1])*(frame - start_frame)/(end_frame - start_frame),
-         p1[2]+(p2[2] .- p1[2])*(frame - start_frame)/(end_frame - start_frame))
+    if start_frame <= frame <= end_frame
+        ratio = (frame - start_frame) / (end_frame - start_frame)
+        y -= foot_position[1] - p1[1]
+        x -= foot_position[2] - p1[2]
 
-    return point(p[1], p[2])
+        y += (p2[1] - p1[1])*ratio
+        x += (p2[2] - p1[2])*ratio
+
+        y += foot_position[1]
+        x += foot_position[2]
+    end
+
+    return point(y, x)
 end
 
 function set_walk_transforms!(lolli::LolliLayer; startup = false,
@@ -215,26 +225,14 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       body_height = lolli.params.body_height);
                         layer = :head)
     else
-#=
-        set_transforms!(lolli, [lean(),
-                                leap(foot_position = lolli.params.foot_position,
-                                     shrink_factor = max_shrink,
-                                     reverse = true,
-                                     start_frame = start_frame,
-                                     end_frame = end_frame)];
+        set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
+                                     foot_position = lolli.params.foot_position,
+                                     jump_height)];
                         layer = :body)
-        set_transforms!(lolli, [lean(),
-                                leap(foot_position = lolli.params.foot_position,
-                                     shrink_factor = max_shrink,
-                                     head = true,
-                                     reverse = true,
-                                     start_frame = start_frame,
-                                     end_frame = end_frame)];
+        set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
+                                     foot_position = lolli.params.foot_position,
+                                     jump_height)];
                         layer = :head)
-=#
     end
 
-end
-
-function walk!(lolli::LolliLayer)
 end

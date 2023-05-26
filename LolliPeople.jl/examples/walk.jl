@@ -25,7 +25,6 @@ function walk_example(num_particles, num_iterations; num_steps = 1,
         video_out = open_video(res; framerate = 30, filename = filebase*".mp4")
     end
     for i = 1:num_frames
-        #walk!(lolli)
         run!(lolli; frame = i)
         if output_type == :video
             write_video!(video_out, [bg, lolli])
