@@ -166,26 +166,45 @@ leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
                           body_height = 1.0, head = false)
 
     if start_frame <= frame <= end_frame
+
+        # This ranges from 0 -> 1
         ratio = (frame - start_frame) / (end_frame - start_frame)
-        jump_height *= ratio*sin(pi*ratio)
-        shrink_factor = shrink_factor - shrink_factor*sin(pi*ratio) +
-                        jump_height
 
-        y -= foot_position[1]
-        x -= foot_position[2]
-
-        if head
-            y += shrink_factor*body_height
-        else
-            y -= shrink_factor*y
-            x = x*min(1.5,1/(1-shrink_factor))
+        # This ranges from 0 -> 1 from start_frame + total_frames/4 ->
+        # end_frame - total_frames / 4
+        movement_ratio = ratio*2-0.5
+        if movement_ratio <= 0
+            movement_ratio = 0
+        elseif movement_ratio >= 1
+            movement_ratio = 1
         end
 
-        y += p1[1]
-        x += p1[2]
+        max_lean = min(pi/4, (p2[2] - p1[2])/(body_height*10))
+        lean_angle = max_lean * sin(2*pi*ratio)
+        jump_height *= movement_ratio*sin(pi*movement_ratio)
+        shrink_factor = shrink_factor - shrink_factor*sin(pi*movement_ratio) +
+                        jump_height
 
-        y += (p2[1] - p1[1])*ratio - jump_height
-        x += (p2[2] - p1[2])*ratio
+        y_temp = y - foot_position[1]
+        x_temp = x - foot_position[2]
+
+        if head
+            y_temp += shrink_factor*body_height
+
+            y = x_temp*sin(lean_angle) + y_temp*cos(lean_angle)
+            x = x_temp*cos(lean_angle) - y_temp*sin(lean_angle)
+        else
+            lean_angle *= -(y_temp)/(body_height)
+            y_temp -= shrink_factor*y_temp
+            x_temp = x_temp*min(1.5,1/(1-shrink_factor))
+
+            x = x_temp*cos(lean_angle) - y_temp*sin(lean_angle)
+            y = x_temp*sin(lean_angle) + y_temp*cos(lean_angle)
+
+        end
+
+        y += p1[1] + (p2[1] - p1[1])*movement_ratio - jump_height
+        x += p1[2] + (p2[2] - p1[2])*movement_ratio
 
         y += foot_position[1]
         x += foot_position[2]
