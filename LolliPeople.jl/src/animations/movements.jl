@@ -132,15 +132,15 @@ end
 #------------------------------------------------------------------------------#
 
 crouch = @fum function crouch(y, x, frame; foot_position = (0,0), head = false,
-                              reverse = false, shrink_factor = 1,
+                              reverse = false, shrink_factor = 0,
                               start_frame = 1, end_frame = 1,
                               translation = (0,0), body_height = 0.5)
     if start_frame <= frame <= end_frame
         if reverse
-            shrink_factor = (1-shrink_factor)*
+            shrink_factor = shrink_factor*
                             (1-(frame-start_frame)/(end_frame - start_frame))
         else
-            shrink_factor = (1-shrink_factor)*
+            shrink_factor = shrink_factor*
                             (frame-start_frame)/(end_frame - start_frame)
         end
 
@@ -162,14 +162,29 @@ end
 
 leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
                           p1 = (0,0), p2 = (0,0), jump_height = 0, 
-                          foot_position = (0,0))
+                          foot_position = (0,0), shrink_factor = 0,
+                          body_height = 1.0, head = false)
 
     if start_frame <= frame <= end_frame
         ratio = (frame - start_frame) / (end_frame - start_frame)
-        y -= foot_position[1] - p1[1]
-        x -= foot_position[2] - p1[2]
+        jump_height *= ratio*sin(pi*ratio)
+        shrink_factor = shrink_factor - shrink_factor*sin(pi*ratio) +
+                        jump_height
 
-        y += (p2[1] - p1[1])*ratio
+        y -= foot_position[1]
+        x -= foot_position[2]
+
+        if head
+            y += shrink_factor*body_height
+        else
+            y -= shrink_factor*y
+            x = x*min(1.5,1/(1-shrink_factor))
+        end
+
+        y += p1[1]
+        x += p1[2]
+
+        y += (p2[1] - p1[1])*ratio - jump_height
         x += (p2[2] - p1[2])*ratio
 
         y += foot_position[1]
@@ -185,7 +200,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                                  end_frame = 0,
                                                  p1 = (0,0),
                                                  p2 = (0,0),
-                                                 jump_height = 0.5)
+                                                 jump_height = 0.25)
     max_shrink = 0.25 + 0.75*(1/(2^(jump_height / lolli.params.body_height)))
     println(max_shrink, '\t', cooldown, '\t', startup)
     if startup && cooldown
@@ -227,11 +242,15 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
     else
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
+                                     shrink_factor = max_shrink,
+                                     body_height = lolli.params.body_height,
                                      jump_height)];
                         layer = :body)
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
-                                     jump_height)];
+                                     shrink_factor = max_shrink,
+                                     body_height = lolli.params.body_height,
+                                     jump_height, head = true)];
                         layer = :head)
     end
 
