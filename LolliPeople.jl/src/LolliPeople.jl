@@ -2,8 +2,6 @@ module LolliPeople
 using Fable
 using Images
 using KernelAbstractions
-using CUDA
-using AMDGPU
 
 export LolliLayer, LolliPerson
 
@@ -14,7 +12,7 @@ mutable struct LolliLayer <: AbstractLayer
 
     body_color::FractalUserMethod
 
-    canvas::Union{Array{C}, CuArray{C}, ROCArray{C}} where C <: RGBA
+    canvas::AT where AT <: AbstractArray{C} where C <: RGBA
     position::Tuple
     world_size::Tuple
     ppu::Number

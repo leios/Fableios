@@ -123,3 +123,78 @@ function LolliLayer(; size = 1.0,
 
 
 end
+
+function set_transforms!(lolli::LolliLayer, fum::FractalUserMethod;
+                         layer = :both, additional_fis = FractalInput[])
+    set_transforms!(lolli, fo(fum, Shaders.previous); layer = layer,
+                    additional_fis = additional_fis)
+end
+
+function set_transforms!(lolli::LolliLayer, fums::Vector{FUM};
+                         additional_fis = FractalInput[],
+                         layer = :both) where FUM <: FractalUserMethod
+    set_transforms!(lolli,
+                    [fo(fums[i], Shaders.previous) for i = 1:length(fums)];
+                    layer = layer, additional_fis = additional_fis)
+end
+
+function set_transforms!(lolli::LolliLayer,
+                         fum::FractalUserMethod, color_fum::FractalUserMethod;
+                         layer = :both, additional_fis = FractalInput[])
+    fo = fractalOperator(fum, color_fum)
+    set_transforms!(lolli, fo; layer = layer, additional_fis = additional_fis)
+end
+
+function set_transforms!(lolli::LolliLayer,
+                         fums::Vector{FractalUserMethod},
+                         color_fums::Vector{FractalUserMethod},
+                         layer = :both, additional_fis = FractalInput[])
+    fos = [fractalOperator(fums[i], color_fums[i]) for i = 1:length(fums)]
+    set_transforms!(lolli, fos; layer = layer, additional_fis = additional_fis)
+end
+
+function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
+                         additional_fis = FractalInput[])
+    H = Hutchinson(fo)
+    if layer == :head
+        lolli.head.H2 = H
+    elseif layer == :body
+        lolli.body.H2 = H
+    else
+        lolli.head.H2 = H
+        lolli.body.H2 = H
+    end
+
+    if length(additional_fis) > 0
+        lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
+    end
+
+end
+
+function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
+                         layer = :both, additional_fis = FractalInput[])
+    H = Hutchinson(fos)
+    if layer == :head
+        lolli.head.H2 = H
+    elseif layer == :body
+        lolli.body.H2 = H
+    else
+        lolli.head.H2 = H
+        lolli.body.H2 = H
+    end
+
+    if length(additional_fis) > 0
+        lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
+    end
+end
+
+function reset_transforms!(lolli; layer = :both)
+    if layer == :head
+        lolli.head.H2 = nothing
+    elseif layer == :body
+        lolli.body.H2 = nothing
+    else
+        lolli.head.H2 = nothing
+        lolli.body.H2 = nothing
+    end
+end
