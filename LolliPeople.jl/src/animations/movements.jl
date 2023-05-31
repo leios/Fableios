@@ -221,7 +221,6 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                                  p2 = (0,0),
                                                  jump_height = 0.25)
     max_shrink = 0.25 + 0.75*(1/(2^(jump_height / lolli.params.body_height)))
-    println(max_shrink, '\t', cooldown, '\t', startup)
     if startup && cooldown
         error("Cannot use both startup and cooldown for walk transforms!")
     elseif startup
@@ -291,16 +290,21 @@ function walk!(lolli::LolliLayer, frame, p1, p2, num_steps,
         set_walk_transforms!(lolli, p1 = p1, p2 = p2, 
                              start_frame = frame, 
                              end_frame = frame + num_frames)
-        
-    elseif (frame-start_frame-startup_frames+1)%(num_frames / num_steps) == 0 &&
-           num_steps != 1
-        set_walk_transforms!(lolli, p1 = p1, p2 = p2, 
-                             start_frame = frame, 
-                             end_frame = frame + (num_frames / num_steps))
     elseif frame == start_frame + num_frames + startup_frames
         set_walk_transforms!(lolli; cooldown = true, p1 = p1, p2 = p2,
                              start_frame = frame,
                              end_frame = frame + startup_frames)
+    elseif (frame-start_frame-startup_frames)%(num_frames / num_steps) == 0 &&
+           num_steps != 1
+        p1_temp = p1
+        p1 = p1 .+ (p2 .- p1) .* ((frame - start_frame - startup_frames) /
+                                  (num_frames - start_frame+1))
+        p2 = p1_temp .+ (p2 .- p1_temp) .* ((frame + (num_frames / num_steps) -
+                                             start_frame - startup_frames) /
+                                            (num_frames - start_frame+1))
+        set_walk_transforms!(lolli, p1 = p1, p2 = p2, 
+                             start_frame = frame, 
+                             end_frame = frame + (num_frames / num_steps))
     elseif frame == start_frame + num_frames + 2*startup_frames
         reset_transforms!(lolli)
     end
