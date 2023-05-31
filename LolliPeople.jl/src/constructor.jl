@@ -187,3 +187,14 @@ function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
     end
 end
+
+function reset_transforms!(lolli; layer = :both)
+    if layer == :head
+        lolli.head.H2 = nothing
+    elseif layer == :body
+        lolli.body.H2 = nothing
+    else
+        lolli.head.H2 = nothing
+        lolli.body.H2 = nothing
+    end
+end

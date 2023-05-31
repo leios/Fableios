@@ -1,5 +1,5 @@
 export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!,
-       set_walk_transforms!
+       set_walk_transforms!, walk!
 
 #------------------------------------------------------------------------------#
 # Transforms
@@ -273,4 +273,35 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                         layer = :head)
     end
 
+end
+
+function walk!(lolli::LolliLayer; start_frame = 0, num_frames = 0, frame = 0,
+               p1 = (0,0), p2 = (0,0), startup_frames = 0, num_steps = 0)
+    walk!(lolli, frame, p1, p2, num_steps, start_frame,
+          num_frames, startup_frames)
+end
+
+function walk!(lolli::LolliLayer, frame, p1, p2, num_steps,
+               start_frame, num_frames, startup_frames)
+
+    if frame == start_frame
+        set_walk_transforms!(lolli; startup = true, p1 = p1, p2 = p2,
+                             start_frame = 1, end_frame = startup_frames)
+    elseif frame == start_frame + startup_frames && num_steps == 1
+        set_walk_transforms!(lolli, p1 = p1, p2 = p2, 
+                             start_frame = frame, 
+                             end_frame = frame + num_frames)
+        
+    elseif (frame-start_frame-startup_frames+1)%(num_frames / num_steps) == 0 &&
+           num_steps != 1
+        set_walk_transforms!(lolli, p1 = p1, p2 = p2, 
+                             start_frame = frame, 
+                             end_frame = frame + (num_frames / num_steps))
+    elseif frame == start_frame + num_frames + startup_frames
+        set_walk_transforms!(lolli; cooldown = true, p1 = p1, p2 = p2,
+                             start_frame = frame,
+                             end_frame = frame + startup_frames)
+    elseif frame == start_frame + num_frames + 2*startup_frames
+        reset_transforms!(lolli)
+    end
 end
