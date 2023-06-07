@@ -29,7 +29,8 @@ function simple_example(num_particles, num_iterations; shape = :rectangle,
         error("No object of type " * string(shape) *" available")
     end
 
-    starburst_transform = Hutchinson(simple_starburst(), Shaders.black(), 1.0)
+    starburst = simple_starburst(start_frame = 1, end_frame = 10)
+    starburst_transform = Hutchinson(starburst, Shaders.black(), 1.0)
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
                          H1 = object, H2 = starburst_transform,
