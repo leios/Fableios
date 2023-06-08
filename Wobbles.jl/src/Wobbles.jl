@@ -1,5 +1,5 @@
 module Wobbles
 
-greet() = print("Hello World!")
+include("kinds/speed.jl")
 
 end # module Wobbles
