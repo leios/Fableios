@@ -47,8 +47,11 @@ function simple_example(num_particles, num_iterations;
 end
 
 @info("Created function simple_example(num_particles, num_iterations;
+                                      shape = define_rectangle(...),
                                       ArrayType = Array, num_frames = 10,
-                                      output_type = :video, 
+                                      output_type = :video,
                                       starburst = simple_starburst, 
                                       starburst_color = Shaders.black)\n"*
-      "shapes can be {:square, rectangle, circle, triangle}")
+      "output_type can be {:image, :video}\n"*
+      "starburst can be any defined starburst such as {simple_starburst,
+                                                hollow_starburst}")
