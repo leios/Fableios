@@ -9,8 +9,13 @@ floppy_speed = @fum function floppy_speed(y, x; wobble_factor = 0.0,
     r = (slope*x + y)/mag
     u = (slope/mag, 1/mag)
 
-    return point(y-u[1]*wobble_factor*r^2,
-                 x+u[2]*wobble_factor*r^2)
+    y += r*u[2]*splat_factor*(wobble_factor)
+    x += r*u[1]*splat_factor*(wobble_factor)
+
+    y -= u[1]*wobble_factor*r^2
+    x += u[2]*wobble_factor*r^2
+
+    return point(y, x)
 end
 
 simple_airfoil = @fum function simple_airfoil(y, x; wobble_factor = 0.0,
