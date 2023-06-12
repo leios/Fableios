@@ -1,10 +1,10 @@
-using Fable, Images, Starbursts
+using Fable, Wobbles, Colors
 
 function simple_example(num_particles, num_iterations;
                         shape = define_circle(color = Shaders.black),
                         ArrayType = Array, num_frames = 10,
                         output_type = :video,
-                        wobble = speed_wobble, 
+                        wobble = floppy_speed, 
                         wobble_color = Shaders.black,
                         wobble_direction = 0.0,
                         max_wobble = 1.0)
@@ -23,9 +23,10 @@ function simple_example(num_particles, num_iterations;
     wobble_factor = fi("wobble_factor", 0.0)
     wobble_transform = wobble(wobble_factor = wobble_factor,
                               wobble_direction = wobble_direction)
+    H2 = Hutchinson(wobble_transform, Shaders.previous, 1.0)
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
-                         H1 = shape, H2 = wobble_transform,
+                         H1 = shape, H2 = H2,
                          num_particles = num_particles,
                          num_iterations = num_iterations)
 
@@ -51,11 +52,11 @@ end
                                       shape = define_circle(...),
                                       ArrayType = Array, num_frames = 10,
                                       output_type = :video,
-                                      wobble = speed_wobble, 
+                                      wobble = floppy_speed, 
                                       wobble_color = Shaders.black,
                                       wobble_direction = 0.0,
                                       max_wobble = 1.0)\n"*
       "output_type can be {:image, :video}\n"*
-      "wobble can be any defined starburst such as {speed_wobble,
+      "wobble can be any defined starburst such as {floppy_speed,
                                                 simple_airfoil}")
 
