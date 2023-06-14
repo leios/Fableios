@@ -1,11 +1,13 @@
-using Fable, Images, Starbursts
+using Fable, Wobbles, Colors
 
 function simple_example(num_particles, num_iterations;
-                        shape = define_rectangle(color = Shaders.black),
+                        shape = define_circle(color = Shaders.black),
                         ArrayType = Array, num_frames = 10,
                         output_type = :video,
-                        starburst = simple_starburst, 
-                        starburst_color = Shaders.black)
+                        wobble = floppy_speed, 
+                        wobble_color = Shaders.black,
+                        wobble_direction = 0.0,
+                        max_wobble = 1.0)
 
     world_size = (9, 16)
     ppu = 1920 / 16
@@ -18,17 +20,19 @@ function simple_example(num_particles, num_iterations;
         video_out = open_video(res; framerate = 30, filename = "out.mp4")
     end
 
-    starburst = starburst(start_frame = 1, end_frame = num_frames,
-                          translation = (0.5, 1.5))
-    starburst_transform = Hutchinson(starburst, starburst_color, 1.0)
+    wobble_factor = fi("wobble_factor", 0.0)
+    wobble_transform = wobble(wobble_factor = wobble_factor,
+                              wobble_direction = wobble_direction)
+    H2 = Hutchinson(wobble_transform, Shaders.previous, 1.0)
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
-                         H1 = shape, H2 = starburst_transform,
+                         H1 = shape, H2 = H2,
                          num_particles = num_particles,
                          num_iterations = num_iterations)
 
     for i = 1:num_frames
-        run!(layer; frame = i)
+        run!(layer)
+        set!(wobble_factor, max_wobble*i/num_frames)
 
         if output_type == :video
             write_video!(video_out, [bg, layer])
@@ -36,8 +40,6 @@ function simple_example(num_particles, num_iterations;
             filename = "out"*lpad(i, 3, "0")*".png"
             write_image([bg, layer]; filename = filename)
         end
-        reset!(layer)
-        reset!(bg)
     end
 
     if output_type == :video
@@ -47,11 +49,14 @@ function simple_example(num_particles, num_iterations;
 end
 
 @info("Created function simple_example(num_particles, num_iterations;
-                                      shape = define_rectangle(...),
+                                      shape = define_circle(...),
                                       ArrayType = Array, num_frames = 10,
                                       output_type = :video,
-                                      starburst = simple_starburst, 
-                                      starburst_color = Shaders.black)\n"*
+                                      wobble = floppy_speed, 
+                                      wobble_color = Shaders.black,
+                                      wobble_direction = 0.0,
+                                      max_wobble = 1.0)\n"*
       "output_type can be {:image, :video}\n"*
-      "starburst can be any defined starburst such as {simple_starburst,
-                                                hollow_starburst}")
+      "wobble can be any defined starburst such as {floppy_speed,
+                                                simple_airfoil}")
+
