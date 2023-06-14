@@ -1,0 +1,11 @@
+name = "step_by_step"
+uuid = "f380d904-c207-450d-945d-33a023cecda0"
+authors = ["James Schloss <jrs.schloss@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Fable = "a3ea4736-0a3b-4c29-ac8a-20364318a635"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+LolliPeople = "fd0a0dcd-a5c9-490a-97af-c3ca9ad3f235"
+Starbursts = "46d9171e-fc76-4725-8c43-800728e68db1"
+Wobbles = "e7e8279b-b176-4910-b8ad-7eb370606eb5"
