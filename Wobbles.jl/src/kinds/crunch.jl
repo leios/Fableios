@@ -1,6 +1,6 @@
 export crunch
 
-crunch = @fum function crunch(y, x; clockwise_rotation = true,
+crunch = @fum function crunch(y, x; clockwise_direction = true,
                               wobble_direction = 0.0,
                               object_location = (0,0),
                               object_width = 0.25,
@@ -22,19 +22,21 @@ crunch = @fum function crunch(y, x; clockwise_rotation = true,
     # crunch
 
     if splat_factor < 1.0
-        temp_y += object_height*0.5
+        y_temp -= object_height*0.5
         theta = acos(splat_factor)
-        if clockwise_direction
+        if !clockwise_direction
             theta *= -1
         end
 
-        x_temp = x*cos(theta) - y*sin(theta)
-        y_temp = x*sin(theta) + y*cos(theta)
+        x_temp2 = x_temp*cos(theta) - y_temp*sin(theta)
+        y_temp = x_temp*sin(theta) + y_temp*cos(theta)
+        x_temp = x_temp2
 
-        x_temp = abs(((x_temp+object_width*2)%(object_width*2))-object_width)-
+        x_temp = abs(((x_temp+object_width*1.5)%(object_width*2))-object_width)-
                  object_width*0.5
+        y_temp += object_height*0.5
     else
-        y *= splat_factor
+        y_temp *= splat_factor
     end
 
     # rotate back
