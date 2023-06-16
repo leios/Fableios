@@ -1,0 +1,15 @@
+name = "why_I_quit"
+uuid = "693473df-964b-4223-a1be-0ba995500959"
+authors = ["James Schloss <jrs.schloss@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+Backgrounds = "10e9acf5-00ef-4c0a-bfd6-45f2654bb5d5"
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+Fable = "a3ea4736-0a3b-4c29-ac8a-20364318a635"
+LolliPeople = "fd0a0dcd-a5c9-490a-97af-c3ca9ad3f235"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Starbursts = "46d9171e-fc76-4725-8c43-800728e68db1"
+Wobbles = "e7e8279b-b176-4910-b8ad-7eb370606eb5"
