@@ -23,7 +23,7 @@ function simple_example(num_particles, num_iterations;
     starburst_transform = Hutchinson(starburst, starburst_color, 1.0)
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
-                         H1 = shape, H2 = starburst_transform,
+                         H = shape, H_post = starburst_transform,
                          num_particles = num_particles,
                          num_iterations = num_iterations)
 
