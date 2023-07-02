@@ -23,7 +23,7 @@ function simple_example(num_particles, num_iterations;
     wobble_factor = fi("wobble_factor", 0.0)
     wobble_transform = wobble(wobble_factor = wobble_factor,
                               wobble_direction = wobble_direction)
-    H_post = Hutchinson(wobble_transform, Shaders.previous, 1.0)
+    H_post = Hutchinson(fo(wobble_transform, Shaders.previous))
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
                          H = shape, H_post = H_post,
