@@ -6,13 +6,15 @@ using KernelAbstractions
 export LolliLayer, LolliPerson
 
 mutable struct LolliLayer <: AbstractLayer
-    head::FractalLayer
-    eyes::Union{Nothing, FractalUserMethod}
-    body::FractalLayer
+    layer::FractalLayer
 
+    head::FractalOperator
+    head_transformations::Union{FractalOperator, Vector{FractalOperator}}
+    body::FractalOperator
+    body_transformations::Union{FractalOperator, Vector{FractalOperator}}
+    eyes::Union{Nothing, FractalUserMethod}
     body_color::FractalUserMethod
 
-    canvas::AT where AT <: AbstractArray{C} where C <: RGBA
     position::Tuple
     world_size::Tuple
     ppu::Number
@@ -22,8 +24,6 @@ mutable struct LolliLayer <: AbstractLayer
 end
 
 LolliPerson(args...; kwargs...) = LolliLayer(args...; kwargs...)
-
-include("fable_interface.jl")
 
 include("skins/simple.jl")
 
