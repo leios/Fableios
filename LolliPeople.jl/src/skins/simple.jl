@@ -12,13 +12,14 @@ simple_eyes = @fum color function simple_eyes(x, y;
                                               brow_angle = 0.0,
                                               brow_size = (0.3, 1.25),
                                               brow_height = 1.0)
+
     location = location .+ head_position
     r2 = eye_size*0.5
     r1 = ellipticity*r2
     y_height = location[1] + r1 - 2*r1 * brow_height
     if y >= y_height
-        if in_ellipse(x,y,location.+(0, 0.5*inter_eye_distance),0.0,r1,r2) ||
-           in_ellipse(x,y,location.-(0, 0.5*inter_eye_distance),0.0,r1,r2)
+        if in_ellipse(y,x,location.+(0, 0.5*inter_eye_distance),0.0,r1,r2) ||
+           in_ellipse(y,x,location.-(0, 0.5*inter_eye_distance),0.0,r1,r2)
             return eye_color
         end
     end
@@ -26,9 +27,9 @@ simple_eyes = @fum color function simple_eyes(x, y;
     if Bool(show_brows)
         brow_size = brow_size .* eye_size
         brow_x = 0.5*inter_eye_distance + brow_size[2]*0.1
-        if in_rectangle(x, y, (y_height-brow_size[1]*0.5, brow_x),
+        if in_rectangle(y, x, (y_height-brow_size[1]*0.5, brow_x),
                         brow_angle, brow_size[2], brow_size[1]) ||
-           in_rectangle(x, y, (y_height-brow_size[1]*0.5, -brow_x),
+           in_rectangle(y, x, (y_height-brow_size[1]*0.5, -brow_x),
                         brow_angle, brow_size[2], brow_size[1])
             return eye_color
         end

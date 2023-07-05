@@ -11,7 +11,7 @@ function check_example(num_particles, num_iterations;
                             num_particles = num_particles,
                             num_iterations = num_iterations)
         run!(lolli)
-        write_image([bg, lolli]; filename = filename)
+        write_image([bg, lolli.layer]; filename = filename)
     elseif transform_type == :check_video
         lolli = LolliPerson(size = height, ArrayType = ArrayType,
                             num_particles = num_particles,
