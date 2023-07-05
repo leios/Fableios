@@ -29,6 +29,7 @@ end
 
 Fable.to_canvas!(layer::LolliLayer) = Fable.to_canvas!(layer.layer)
 Fable.run!(layer::LolliLayer) = Fable.run!(layer.layer)
+Fable.reset!(layer::LolliLayer) = Fable.reset!(layer.layer)
 
 LolliPerson(args...; kwargs...) = LolliLayer(args...; kwargs...)
 

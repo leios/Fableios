@@ -19,7 +19,7 @@ function check_example(num_particles, num_iterations;
         video_out = open_video(res; framerate = 30, filename = "out.mp4")
         for i = 1:num_frames
             run!(lolli)
-            write_video!(video_out, [bg, lolli])
+            write_video!(video_out, [bg, lolli.layer])
         end
 
         close_video(video_out)

@@ -44,7 +44,7 @@ function blink!(lolli::LolliLayer, curr_frame, start_frame, end_frame)
     # split into 3rds, 1 close, 1 closed, 1 open
     third_frame = (end_frame - start_frame)*0.333
 
-    fis = lolli.head.color_fis[1][2]
+    fis = lolli.head.colors[1][2].fis
     if curr_frame < start_frame + third_frame
         brow_height = 1 - (curr_frame - start_frame)/(third_frame)
     elseif curr_frame >= start_frame + third_frame &&

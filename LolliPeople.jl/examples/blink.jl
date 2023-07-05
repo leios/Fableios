@@ -17,7 +17,7 @@ function blink_example(num_particles, num_iterations;
                             num_iterations = num_iterations)
 
         run!(lolli)
-        write_image([bg, lolli]; filename = filename)
+        write_image([bg, lolli.layer]; filename = filename)
     elseif transform_type == :blink
         brow_height = fi("brow_height", 1.0)
         show_brows = fi("show_brows", false)
@@ -34,7 +34,7 @@ function blink_example(num_particles, num_iterations;
             blink!(lolli, i, 1, num_frames)
 
             run!(lolli)
-            write_video!(video_out, [bg, lolli])
+            write_video!(video_out, [bg, lolli.layer])
             reset!(lolli)
             reset!(bg)
         end
