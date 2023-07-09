@@ -49,9 +49,9 @@ function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
     stretch_factor = lolli.additional_fis[stretch_factor_idx]
     set!(stretch_factor, factor)
 
-    head_position_idx = find_fi_index(:position, lolli.head.fis[1])
+    head_position_idx = find_fi_index(:position, lolli.head.ops[1].fis)
 
-    head_position = lolli.head.fis[1][head_position_idx]
+    head_position = lolli.head.ops[1].fis[head_position_idx]
     set!(head_position, (value(head_position)[1]-dfactor,
                          value(head_position)[2]))
 end
@@ -79,9 +79,9 @@ function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
     jump_height = lolli.additional_fis[jump_height_idx]
     set!(jump_height, max(0.0, factor - 0.5*max_jump_height))
 
-    head_position_idx = find_fi_index(:position, lolli.head.fis[1])
+    head_position_idx = find_fi_index(:position, lolli.head.ops[1].fis)
 
-    head_position = lolli.head.fis[1][head_position_idx]
+    head_position = lolli.head.ops[1].fis[head_position_idx]
     set!(head_position, (value(head_position)[1]-dfactor,
                          value(head_position)[2]))
 
