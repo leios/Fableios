@@ -22,6 +22,7 @@ function lean_example(num_particles, num_iterations;
                         head_transforms = [head_fo],
                         body_transforms = [body_fo])
 
+
     video_out = open_video(res; framerate = 30, filename = "out.mp4")
     for i = 1:num_frames
         new_angle = 0.25*pi*sin(2*pi*i/num_frames)

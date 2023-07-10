@@ -48,8 +48,8 @@ function LolliLayer(; size = 1.0,
                       num_iterations = 1000,
                       postprocessing_steps = Vector{AbstractPostProcess}([]),
                       eye_fum::Union{FractalUserMethod, Nothing} = nothing,
-                      head_transforms = nothing,
-                      body_transforms = nothing,
+                      head_transformations = nothing,
+                      body_transformations = nothing,
                       additional_fis = Vector{FractalInput}([]),
                       set_as_fis = false)
     if set_as_fis
@@ -88,12 +88,10 @@ function LolliLayer(; size = 1.0,
                            color = (body_color, eye_fum))
 
     H = Hutchinson([body, head])
-    if isnothing(body_transforms)
-        H_post = nothing
-    elseif isnothing(head_transforms)
+    if isnothing(body_transformations) && isnothing(head_transformations)
         H_post = nothing
     else
-        H_post = Hutchinson([fo(body_transforms), fo(head_transforms)])
+        H_post = Hutchinson([fo(body_transformations), fo(head_transformations)])
     end
     layer = FractalLayer(num_particles = num_particles,
                          num_iterations = num_iterations,
@@ -101,8 +99,8 @@ function LolliLayer(; size = 1.0,
                          position = layer_position, ArrayType = ArrayType,
                          H = H, H_post = H_post)
 
-    return LolliLayer(layer, head, head_transforms,
-                      body, body_transforms, eye_fum, body_color,
+    return LolliLayer(layer, head, head_transformations,
+                      body, body_transformations, eye_fum, body_color,
                       layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
 
@@ -140,14 +138,13 @@ end
 
 function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
                          additional_fis = FractalInput[])
-    H = Hutchinson(fo)
     if layer == :head
-        lolli.head_transforms = H
+        lolli.head_transformations = fo
     elseif layer == :body
-        lolli.body_transforms = H
+        lolli.body_transformations = fo
     else
-        lolli.head_transforms = H
-        lolli.body_transforms = H
+        lolli.head_transformations = fo
+        lolli.body_transformations = fo
     end
 
     rebuild_operators(lolli)
@@ -160,14 +157,13 @@ end
 
 function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
                          layer = :both, additional_fis = FractalInput[])
-    H = Hutchinson(fos)
     if layer == :head
-        lolli.head_transforms = H
+        lolli.head_transformations = fos
     elseif layer == :body
-        lolli.body_transforms = H
+        lolli.body_transformations = fos
     else
-        lolli.head_transforms = H
-        lolli.body_transforms = H
+        lolli.head_transformations = fos
+        lolli.body_transformations = fos
     end
 
     rebuild_operators(lolli)
@@ -179,16 +175,16 @@ end
 
 function reset_transforms!(lolli; layer = :both)
     if layer == :head
-        lolli.head_transforms = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transforms),
-                                         fo(lolli.head_transforms)])
+        lolli.head_transformations = fo(Smears.null, Shaders.null)
+        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
+                                         fo(lolli.head_transformations)])
     elseif layer == :body
-        lolli.body_transforms = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transforms),
-                                         fo(lolli.head_transforms)])
+        lolli.body_transformations = fo(Smears.null, Shaders.null)
+        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
+                                         fo(lolli.head_transformations)])
     else
-        lolli.head_transforms = nothing
-        lolli.body_transforms = nothing
+        lolli.head_transformations = nothing
+        lolli.body_transformations = nothing
         lolli.layer.H_post = nothing
     end
 
@@ -196,8 +192,8 @@ end
 
 function rebuild_operators(lolli)
     H = Hutchinson([lolli.body, lolli.head])
-    H_post = Hutchinson([fo(lolli.body_transforms),
-                         fo(lolli.head_transforms)])
+    H_post = Hutchinson([fo(lolli.body_transformations),
+                         fo(lolli.head_transformations)])
     lolli.layer.H = H
     lolli.layer.H_post = H_post
 end

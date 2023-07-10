@@ -21,9 +21,10 @@ function walk_example(num_particles, num_iterations; num_steps = 1,
               frame = i, p1, p2, startup_frames, num_steps)
         run!(lolli; frame = i)
         if output_type == :video
-            write_video!(video_out, [bg, lolli])
+            write_video!(video_out, [bg, lolli.layer])
         else
-            write_image([bg, lolli]; filename = filebase*lpad(i, 3, "0")*".png")
+            write_image([bg, lolli.layer];
+                        filename = filebase*lpad(i, 3, "0")*".png")
         end
         reset!(lolli)
         reset!(bg)

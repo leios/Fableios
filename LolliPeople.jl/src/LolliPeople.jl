@@ -28,7 +28,7 @@ mutable struct LolliLayer
 end
 
 Fable.to_canvas!(layer::LolliLayer) = Fable.to_canvas!(layer.layer)
-Fable.run!(layer::LolliLayer) = Fable.run!(layer.layer)
+Fable.run!(layer::LolliLayer; kwargs...) = Fable.run!(layer.layer; kwargs...)
 Fable.reset!(layer::LolliLayer) = Fable.reset!(layer.layer)
 
 LolliPerson(args...; kwargs...) = LolliLayer(args...; kwargs...)
