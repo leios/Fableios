@@ -20,14 +20,14 @@ function jump_example(num_particles, num_iterations;
                             num_iterations = num_iterations,
                             head_position = head_position,
                             additional_fis = [stretch_factor, jump_height],
-                            body_smears = [body_fo])
+                            body_transforms = [body_fo])
 
         video_out = open_video(res; framerate = 30, filename = "out.mp4")
         for i = 1:num_frames
             jump!(lolli, i, 1, num_frames)
     
             run!(lolli)
-            write_video!(video_out, [bg, lolli])
+            write_video!(video_out, [bg, lolli.layer])
             reset!(lolli)
             reset!(bg)
         end
@@ -44,14 +44,14 @@ function jump_example(num_particles, num_iterations;
                             num_iterations = num_iterations,
                             head_position = head_position,
                             additional_fis = [stretch_factor],
-                            body_smears = [body_fo])
+                            body_transforms = [body_fo])
 
         video_out = open_video(res; framerate = 30, filename = "out.mp4")
         for i = 1:num_frames
             bounce!(lolli, i, 1, num_frames)
     
             run!(lolli)
-            write_video!(video_out, [bg, lolli])
+            write_video!(video_out, [bg, lolli.layer])
             reset!(lolli)
             reset!(bg)
         end

@@ -19,8 +19,9 @@ function lean_example(num_particles, num_iterations;
                         ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,
-                        head_smears = [head_fo],
-                        body_smears = [body_fo])
+                        head_transforms = [head_fo],
+                        body_transforms = [body_fo])
+
 
     video_out = open_video(res; framerate = 30, filename = "out.mp4")
     for i = 1:num_frames
@@ -29,7 +30,7 @@ function lean_example(num_particles, num_iterations;
         set!(lean_angle, new_angle)
 
         run!(lolli)
-        write_video!(video_out, [bg, lolli])
+        write_video!(video_out, [bg, lolli.layer])
         reset!(lolli)
         reset!(bg)
     end

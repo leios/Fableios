@@ -48,8 +48,8 @@ function LolliLayer(; size = 1.0,
                       num_iterations = 1000,
                       postprocessing_steps = Vector{AbstractPostProcess}([]),
                       eye_fum::Union{FractalUserMethod, Nothing} = nothing,
-                      head_smears = Vector{FractalOperator}([]),
-                      body_smears = Vector{FractalOperator}([]),
+                      head_transformations = nothing,
+                      body_transformations = nothing,
                       additional_fis = Vector{FractalInput}([]),
                       set_as_fis = false)
     if set_as_fis
@@ -69,23 +69,6 @@ function LolliLayer(; size = 1.0,
                            body_height = body_height,
                            body_position = body_position)
 
-    H2_head = nothing
-    H2_body = nothing
-
-    if length(head_smears) > 0
-        H2_head = Hutchinson()
-        for i = 1:length(head_smears)
-            H2_head = Hutchinson(H2_head, Hutchinson(head_smears[i]))
-        end
-    end
-
-    if length(body_smears) > 0
-        H2_body = Hutchinson()
-        for i = 1:length(body_smears)
-            H2_body = Hutchinson(H2_body, Hutchinson(body_smears[i]))
-        end
-    end
-
     if eye_fum == nothing
         eye_fum = simple_eyes(head_position = head_position,
                               inter_eye_distance = size * 0.15,
@@ -100,25 +83,25 @@ function LolliLayer(; size = 1.0,
                               scale_y = body_height,
                               color = body_color)
 
-    body_layer = FractalLayer(num_particles = num_particles,
-                              num_iterations = num_iterations,
-                              ppu = ppu, world_size = world_size,
-                              position = layer_position, ArrayType = ArrayType,
-                              H1 = body, H2 = H2_body)
-
     head = define_circle(; position = head_position,
                            radius = head_radius,
                            color = (body_color, eye_fum))
 
-    head_layer = FractalLayer(num_particles = num_particles,
-                              num_iterations = num_iterations,
-                              ppu = ppu, world_size = world_size,
-                              position = layer_position, ArrayType = ArrayType,
-                              H1 = head, H2 = H2_head)
+    H = Hutchinson([body, head])
+    if isnothing(body_transformations) && isnothing(head_transformations)
+        H_post = nothing
+    else
+        H_post = Hutchinson([fo(body_transformations), fo(head_transformations)])
+    end
+    layer = FractalLayer(num_particles = num_particles,
+                         num_iterations = num_iterations,
+                         ppu = ppu, world_size = world_size,
+                         position = layer_position, ArrayType = ArrayType,
+                         H = H, H_post = H_post)
 
-    canvas = copy(head_layer.canvas)
-    return LolliLayer(head_layer, eye_fum, body_layer, body_color,
-                      canvas, layer_position, world_size, ppu, p,
+    return LolliLayer(layer, head, head_transformations,
+                      body, body_transformations, eye_fum, body_color,
+                      layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
 
 
@@ -155,15 +138,16 @@ end
 
 function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
                          additional_fis = FractalInput[])
-    H = Hutchinson(fo)
     if layer == :head
-        lolli.head.H2 = H
+        lolli.head_transformations = fo
     elseif layer == :body
-        lolli.body.H2 = H
+        lolli.body_transformations = fo
     else
-        lolli.head.H2 = H
-        lolli.body.H2 = H
+        lolli.head_transformations = fo
+        lolli.body_transformations = fo
     end
+
+    rebuild_operators(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
@@ -173,15 +157,16 @@ end
 
 function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
                          layer = :both, additional_fis = FractalInput[])
-    H = Hutchinson(fos)
     if layer == :head
-        lolli.head.H2 = H
+        lolli.head_transformations = fos
     elseif layer == :body
-        lolli.body.H2 = H
+        lolli.body_transformations = fos
     else
-        lolli.head.H2 = H
-        lolli.body.H2 = H
+        lolli.head_transformations = fos
+        lolli.body_transformations = fos
     end
+
+    rebuild_operators(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
@@ -190,11 +175,25 @@ end
 
 function reset_transforms!(lolli; layer = :both)
     if layer == :head
-        lolli.head.H2 = nothing
+        lolli.head_transformations = fo(Smears.null, Shaders.null)
+        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
+                                         fo(lolli.head_transformations)])
     elseif layer == :body
-        lolli.body.H2 = nothing
+        lolli.body_transformations = fo(Smears.null, Shaders.null)
+        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
+                                         fo(lolli.head_transformations)])
     else
-        lolli.head.H2 = nothing
-        lolli.body.H2 = nothing
+        lolli.head_transformations = nothing
+        lolli.body_transformations = nothing
+        lolli.layer.H_post = nothing
     end
+
+end
+
+function rebuild_operators(lolli)
+    H = Hutchinson([lolli.body, lolli.head])
+    H_post = Hutchinson([fo(lolli.body_transformations),
+                         fo(lolli.head_transformations)])
+    lolli.layer.H = H
+    lolli.layer.H_post = H_post
 end

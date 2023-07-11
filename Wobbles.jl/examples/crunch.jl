@@ -25,10 +25,10 @@ function crunch_example(num_particles, num_iterations;
                               wobble_direction = wobble_direction,
                               object_height = object_height,
                               object_width = object_width)
-    H2 = Hutchinson(wobble_transform, Shaders.previous, 1.0)
+    H_post = Hutchinson(fo(wobble_transform, Shaders.previous))
     layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
-                         H1 = shape, H2 = H2,
+                         H = shape, H_post = H_post,
                          num_particles = num_particles,
                          num_iterations = num_iterations)
 

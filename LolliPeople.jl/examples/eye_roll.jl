@@ -20,7 +20,7 @@ function eyeroll_example(num_particles, num_iterations;
         set!(eye_location, location)
 
         run!(lolli)
-        write_video!(video_out, [bg, lolli])
+        write_video!(video_out, [bg, lolli.layer])
         reset!(lolli)
         reset!(bg)
     end
