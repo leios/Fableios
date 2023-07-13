@@ -30,10 +30,10 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
                 logscale = false, gamma = 2.2, calc_max_value = false,
                 max_value = 1, num_ignore = 20, num_particles = 1000,
                 num_iterations = 1000, dims = 2, solver_type = :random,
-                size = 1.0,
-                head_position = (-0.25*size, 0.0), head_radius = size*0.25,
-                foot_position = (0.5*size, 0.0), body_width = 0.1*size,
-                body_height = 0.45*size, body_position = (0.275*size, 0.0))
+                scale = 1.0,
+                head_position = (-0.25*scale, 0.0), head_radius = scale*0.25,
+                foot_position = (0.5*scale, 0.0), body_width = 0.1*scale,
+                body_height = 0.45*scale, body_position = (0.275*scale, 0.0))
 
     return (numthreads = numthreads,
             numcores = numcores,
@@ -48,7 +48,7 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
             num_iterations = num_iterations,
             dims = dims,
             solver_type = solver_type,
-            size = size,
+            scale = scale,
             head_position = head_position,
             head_radius = head_radius,
             foot_position = foot_position,
@@ -57,13 +57,13 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
             body_position = body_position)
 end
 
-function LolliLayer(; size = 1.0,
-                      head_position = (-0.25*size, 0.0),
-                      head_radius = size*0.25,
-                      foot_position = (0.5*size, 0.0),
-                      body_width = 0.1*size,
-                      body_height = 0.45*size,
-                      body_position = (0.275*size, 0.0),
+function LolliLayer(; scale = 1.0,
+                      head_position = (-0.25*scale, 0.0),
+                      head_radius = scale*0.25,
+                      foot_position = (0.5*scale, 0.0),
+                      body_width = 0.1*scale,
+                      body_height = 0.45*scale,
+                      body_position = (0.275*scale, 0.0),
                       body_color = Shaders.black,
                       ArrayType = Array,
                       ppu = 1200,
@@ -99,12 +99,12 @@ function LolliLayer(; size = 1.0,
 
     if eye_fum == nothing
         eye_fum = simple_eyes(head_position = head_position,
-                              inter_eye_distance = size * 0.15,
-                              size = size)
+                              inter_eye_distance = scale * 0.15,
+                              scale = scale)
     end
 
     postprocessing_steps = vcat([CopyToCanvas()], postprocessing_steps)
-    layer_position = (foot_position[1] - size*0.5, foot_position[2])
+    layer_position = (foot_position[1] - scale*0.5, foot_position[2])
     body = define_rectangle(; position = body_position,
                               rotation = 0.0,
                               scale_x = body_width,

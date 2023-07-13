@@ -6,7 +6,7 @@ function rotate_example(num_particles, num_iterations; num_frames = 10,
     res = (1080, 1920)
     rotation = fi("rotation", 0.0)
     rotation_fo = fo(rotate(angle = rotation))
-    lolli = LolliPerson(size = height, ArrayType = ArrayType,
+    lolli = LolliPerson(scale = height, ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,
                         head_transforms = [rotation_fo],

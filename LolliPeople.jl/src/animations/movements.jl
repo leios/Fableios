@@ -35,7 +35,7 @@ jump_smear = @fum function jump_smear(x, y; foot_position = (0.0, 0.0),
 end
 
 function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
-                 max_bounce_height = 0.1*lolli.params.size)
+                 max_bounce_height = 0.1*lolli.params.scale)
 
     factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_bounce_height
     dfactor = factor-(sin(2*pi*(curr_frame-1)/
@@ -57,7 +57,7 @@ function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
 end
 
 function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
-               max_jump_height = 0.1*lolli.params.size)
+               max_jump_height = 0.1*lolli.params.scale)
 
     factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_jump_height
     dfactor = factor-(sin(2*pi*(curr_frame-1)/

@@ -8,7 +8,7 @@ function check_crowd_example(num_particles, num_iterations;
 
     translation_1 = fo(translate(translation = (0, -0.5)))
     translation_2 = fo(translate(translation = (0, 0.5)))
-    lolli = LolliPerson(size = height, ArrayType = ArrayType,
+    lolli = LolliPerson(scale = height, ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,
                         head_smears = ((translation_1, translation_2), translation_2),

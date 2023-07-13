@@ -8,10 +8,10 @@ function blink_example(num_particles, num_iterations;
     res = (1080, 1920)
 
     if transform_type == :brow
-        eye_operator = simple_eyes(size = height,
+        eye_operator = simple_eyes(scale = height,
                                    brow_height = brow_height,
                                    show_brows = true)
-        lolli = LolliPerson(size = height, eye_fum = eye_operator,
+        lolli = LolliPerson(scale = height, eye_fum = eye_operator,
                             ArrayType = ArrayType,
                             num_particles = num_particles,
                             num_iterations = num_iterations)
@@ -21,10 +21,10 @@ function blink_example(num_particles, num_iterations;
     elseif transform_type == :blink
         brow_height = fi("brow_height", 1.0)
         show_brows = fi("show_brows", false)
-        eye_operator = simple_eyes(size = height,
+        eye_operator = simple_eyes(scale = height,
                                    brow_height = brow_height,
                                    show_brows = show_brows)
-        lolli = LolliPerson(size = height, eye_fum = eye_operator,
+        lolli = LolliPerson(scale = height, eye_fum = eye_operator,
                             ArrayType = ArrayType,
                             num_particles = num_particles,
                             num_iterations = num_iterations)
