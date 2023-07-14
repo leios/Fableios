@@ -1,7 +1,7 @@
 using Fable, Images, LolliPeople
 
 function check_crowd_example(num_particles, num_iterations;
-                             height = 0.5, ArrayType = Array, num_frames = 10,
+                             height = 0.5, ArrayType = Array,
                              filename = "out.png")
     bg = ColorLayer(RGBA(0.5, 0.5, 0.5, 1); ArrayType = ArrayType)
     res = (1080, 1920)
@@ -12,8 +12,10 @@ function check_crowd_example(num_particles, num_iterations;
                         num_particles = num_particles,
                         num_iterations = num_iterations,
                         head_transforms = (translation_1,
+                                           translation_2,
                                            translation_2),
                         body_transforms = (translation_1,
+                                           translation_2,
                                            translation_2))
 
     run!(lolli)

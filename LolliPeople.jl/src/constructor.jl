@@ -1,6 +1,7 @@
 export LolliLayer, LolliPerson, set_transforms!
 
 function define_lolli_Hs(transforms, post_transforms)
+
     kept_transforms = FractalOperator[]
     keep_post_transforms = false
     if !minimum(isnothing.(post_transforms))
@@ -117,9 +118,9 @@ function LolliLayer(; scale = 1.0,
                            radius = head_radius,
                            color = (body_color, eye_fum))
 
-    H, H_post = define_lolli_Hs([pre_objects..., head, body, post_objects...],
-                                [pre_object_transforms..., head_transforms,
-                                 body_transforms, post_object_transforms...])
+    H, H_post = define_lolli_Hs([pre_objects..., body, head, post_objects...],
+                                [pre_object_transforms..., body_transforms,
+                                 head_transforms, post_object_transforms...])
 
     layer = FractalLayer(num_particles = num_particles,
                          num_iterations = num_iterations,
@@ -131,7 +132,6 @@ function LolliLayer(; scale = 1.0,
                       body, body_transforms, eye_fum, body_color,
                       layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
-
 
 end
 
