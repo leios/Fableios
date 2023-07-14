@@ -1,9 +1,9 @@
-export LolliLayer, LolliPerson
+export LolliLayer, LolliPerson, set_transforms!
 
 function define_lolli_Hs(transforms, post_transforms)
     kept_transforms = FractalOperator[]
     keep_post_transforms = false
-    if minimum(isnothing.(post_transforms))
+    if !minimum(isnothing.(post_transforms))
         keep_post_transforms = true
         kept_post_transforms = FractalOperator[]
     else
@@ -20,7 +20,9 @@ function define_lolli_Hs(transforms, post_transforms)
     end
 
     H = Hutchinson(kept_transforms)
-    H_post = Hutchinson(kept_post_transforms)
+    if keep_post_transforms
+        H_post = Hutchinson(kept_post_transforms)
+    end
 
     return H, H_post
 end

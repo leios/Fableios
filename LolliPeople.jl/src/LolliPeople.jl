@@ -9,11 +9,11 @@ mutable struct LolliLayer
     layer::FractalLayer
 
     head::FractalOperator
-    head_transforms::Union{FractalOperator,
+    head_transforms::Union{Tuple, FractalOperator,
                            Vector{FractalOperator},
                            Nothing}
     body::FractalOperator
-    body_transforms::Union{FractalOperator,
+    body_transforms::Union{Tuple, FractalOperator,
                            Vector{FractalOperator},
                            Nothing}
     eyes::Union{Nothing, FractalUserMethod}

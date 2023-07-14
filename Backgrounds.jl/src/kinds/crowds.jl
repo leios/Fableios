@@ -17,8 +17,8 @@ end
 
 struct Row <: AbstractCrowd
     num_lollis::Int
-    color_distribution::Union{FractalUserMethod, Vector{FractalUserMethod}}
-    lolli_scale::Number
+    color_distribution::Vector{FUM} where FUM <: FractalUserMethod
+    height::Number
     spacing::Number
     location::Tuple{Number, Number}
     chair_idx::Number
@@ -35,27 +35,27 @@ function create_H_set(row::Row; num_pre_layers = 0, num_post_layers = 0)
                       row.location[2] - 0.5*row.num_lollis*row.spacing)
 
     if row.chair_idx > 0
-        chair_set = (fo(translation(translation = start_location),))
+        chair_set = (fo(translate(translation = start_location)),)
     else
         chair_set = nothing
     end
 
     # creating H_set for each lolli
     if rand() < row.fill_percentage
-        H_set = (fo(translation(translation = start_location),
+        H_set = (fo(translate(translation = start_location),
                  rand(row.color_distribution)),)
     else
         H_set = ()
     end
-    for i = 2:num_lollis
-        new_location = (start_location[1], start_location[2]+spacing*(i-1))
+    for i = 2:row.num_lollis
+        new_location = (start_location[1], start_location[2]+row.spacing*(i-1))
         if row.chair_idx > 0
             chair_set = (chair_set...,
-                         fo(translation(translation = new_location)))
+                         fo(translate(translation = new_location)))
         end
 
         if rand() < row.fill_percentage
-            H_set = (H_set..., fo(translation(translation = new_location),
+            H_set = (H_set..., fo(translate(translation = new_location),
                                rand(row.color_distribution)))
         end
     end
@@ -115,6 +115,6 @@ end
 function create_bench(; location = (0,0), width = 0.5, height = 0.25,
                         color = bench_shader(scale = height, 
                                              y_location = location[1]))
-    return create_rectangle(; scale_x = height, scale_y = width, color = color,
+    return define_rectangle(; scale_x = height, scale_y = width, color = color,
                               position = (height*0.5, 0))
 end

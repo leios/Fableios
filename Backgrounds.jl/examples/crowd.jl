@@ -7,11 +7,11 @@ function crowd_example(num_particles, num_iterations; ArrayType = Array,
     chair = create_bench(; width = scale, height = 0.5*scale)
     lolli = LolliPerson(; scale = 0.25, ArrayType,
                           num_particles, num_iterations,
-                          pre_objects = [bench]))
-    rows = [create_row(lolli;
-                       num_lollis = lollis_per_row - floor(i/2),
+                          pre_objects = [chair])
+    start_height = -(num_rows*0.5*scale)
+    rows = [create_row(num_lollis = lollis_per_row - floor(i/2),
                        scale = scale,
-                       position = (start_height - 0.5*scale, 0),
+                       location = (start_height + 0.5*scale, 0),
                        chair_idx = 1
                        ) for i = 1:num_rows]
     create_crowd!(lolli, rows)

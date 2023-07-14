@@ -11,9 +11,11 @@ function check_crowd_example(num_particles, num_iterations;
     lolli = LolliPerson(scale = height, ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations,
-                        head_smears = ((translation_1, translation_2), translation_2),
-                        body_smears = ((translation_1, translation_2), translation_2))
-    run!(lolli)
-    write_image([bg, lolli]; filename = filename)
+                        head_transforms = (translation_1,
+                                           translation_2),
+                        body_transforms = (translation_1,
+                                           translation_2))
 
+    run!(lolli)
+    write_image([bg, lolli.layer]; filename = filename)
 end
