@@ -1,4 +1,14 @@
-export simple_eyes, blink!
+export simple_eyes, blink!, change_skin
+
+change_skin = @fum color function change_skin(y, x, color;
+                                              skin_color = (0,0,0,1),
+                                              new_color = (0,0,0,1))
+    if color == RGBA{Float32}(skin_color)
+        return RGBA{Float32}(new_color)
+    end
+
+    return color
+end
 
 simple_eyes = @fum color function simple_eyes(x, y;
                                               scale = 1.0,
