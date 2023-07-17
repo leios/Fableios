@@ -230,7 +230,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p1,
                                       body_height = lolli.params.body_height);
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
                                       head = true,
@@ -238,7 +238,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p1,
                                       body_height = lolli.params.body_height);
-                        layer = :head)
+                        layers = [:head])
     elseif cooldown
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
@@ -247,7 +247,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p2,
                                       body_height = lolli.params.body_height);
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
                                       head = true,
@@ -256,20 +256,20 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p2,
                                       body_height = lolli.params.body_height);
-                        layer = :head)
+                        layers = [:head])
     else
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
                                      shrink_factor = max_shrink,
                                      body_height = lolli.params.body_height,
                                      jump_height)];
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
                                      shrink_factor = max_shrink,
                                      body_height = lolli.params.body_height,
                                      jump_height, head = true)];
-                        layer = :head)
+                        layers = [:head])
     end
 
 end

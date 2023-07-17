@@ -47,6 +47,7 @@ function create_H_set(row::Row; num_pre_layers = 0, num_post_layers = 0)
     else
         H_set = ()
     end
+
     for i = 2:row.num_lollis
         new_location = (start_location[1], start_location[2]+row.spacing*(i-1))
         if row.chair_idx > 0
@@ -62,8 +63,11 @@ function create_H_set(row::Row; num_pre_layers = 0, num_post_layers = 0)
 
     if length(H_set) > 0
         # distributing across all layers (chair, head, body, etc)
-        H_set = (chair_set, H_set, H_set)
-        for i = num_post_layers
+        H_set = (H_set, H_set)
+        for i = 1:num_pre_layers
+            H_set = (H_set[1], H_set...)
+        end
+        for i = 1:num_post_layers
             H_set = (H_set..., H_set)
         end
     else
@@ -93,7 +97,7 @@ end
 
 function create_crowd!(base_lolli::LolliLayer, rows::Vector{Row})
     H_set = create_H_set(rows)
-    set_transforms!(base_lolli, H_set)
+    base_lolli.layer.H_post = Hutchinson(H_set)
 end
 
 #------------------------------------------------------------------------------#

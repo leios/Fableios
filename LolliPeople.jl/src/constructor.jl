@@ -1,4 +1,4 @@
-export LolliLayer, LolliPerson, set_transforms!
+export LolliLayer, LolliPerson, set_transforms!, rebuild_operators!
 
 function define_lolli_Hs(transforms, post_transforms)
 
@@ -129,8 +129,10 @@ function LolliLayer(; scale = 1.0,
                          H = H, H_post = H_post)
 
     return LolliLayer(layer, head, head_transforms,
-                      body, body_transforms, eye_fum, body_color,
-                      layer_position, world_size, ppu, p,
+                      body, body_transforms,
+                      pre_objects, pre_object_transforms,
+                      post_objects, post_object_transforms,
+                      eye_fum, body_color, layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
 
 end
@@ -164,18 +166,29 @@ function set_transforms!(lolli::LolliLayer,
     set_transforms!(lolli, fos; layer = layer, additional_fis = additional_fis)
 end
 
-function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
+function set_transforms!(lolli::LolliLayer, fo::FractalOperator;
+                         layers = [:head, :body],
                          additional_fis = FractalInput[])
-    if layer == :head
-        lolli.head_transforms = fo
-    elseif layer == :body
-        lolli.body_transforms = fo
-    else
-        lolli.head_transforms = fo
-        lolli.body_transforms = fo
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fo
+        elseif layers[i] == :body
+            lolli.body_transforms = fo
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fo
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fo
+        elseif layers[i] == :all
+            lolli.head_transforms = fo
+            lolli.body_transforms = fo
+            lolli.pre_object_transforms = fo
+            lolli.post_object_transforms = fo
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
 
-    rebuild_operators(lolli)
+    rebuild_operators!(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
@@ -184,43 +197,67 @@ function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
 end
 
 function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
-                         layer = :both, additional_fis = FractalInput[])
-    if layer == :head
-        lolli.head_transforms = fos
-    elseif layer == :body
-        lolli.body_transforms = fos
-    else
-        lolli.head_transforms = fos
-        lolli.body_transforms = fos
+                         layers = [:head, :body],
+                         additional_fis = FractalInput[])
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fos
+        elseif layers[i] == :body
+            lolli.body_transforms = fos
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fos
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fos
+        elseif layers[i] == :all
+            lolli.head_transforms = fos
+            lolli.body_transforms = fos
+            lolli.pre_object_transforms = fos
+            lolli.post_object_transforms = fos
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
 
-    rebuild_operators(lolli)
+    rebuild_operators!(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
     end
 end
 
-function reset_transforms!(lolli; layer = :both)
-    if layer == :head
-        lolli.head_transforms = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transforms),
-                                         fo(lolli.head_transforms)])
-    elseif layer == :body
-        lolli.body_transforms = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transforms),
-                                         fo(lolli.head_transforms)])
-    else
-        lolli.head_transforms = nothing
-        lolli.body_transforms = nothing
-        lolli.layer.H_post = nothing
+function reset_transforms!(lolli; layer = [:head, :body])
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :body
+            lolli.body_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :all
+            lolli.head_transforms = nothing
+            lolli.body_transforms = nothing
+            lolli.pre_object_transforms = nothing
+            lolli.post_object_transforms = nothing
+            lolli.layer.H_post = nothing
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
+
+    rebuild_operators!(lolli)
 
 end
 
-function rebuild_operators(lolli)
-    H = Hutchinson([lolli.body, lolli.head])
-    H_post = Hutchinson([fo(lolli.body_transforms), fo(lolli.head_transforms)])
+function rebuild_operators!(lolli)
+    H, H_post = define_lolli_Hs([lolli.pre_objects...,
+                                 lolli.body, lolli.head,
+                                 lolli.post_objects...],
+                                [lolli.pre_object_transforms...,
+                                 lolli.body_transforms,
+                                 lolli.head_transforms,
+                                 lolli.post_object_transforms...])
     lolli.layer.H = H
     lolli.layer.H_post = H_post
 end

@@ -15,6 +15,7 @@ function crowd_example(num_particles, num_iterations; ArrayType = Array,
                        chair_idx = 1
                        ) for i = 1:num_rows]
     create_crowd!(lolli, rows)
+    return lolli
 
     run!(lolli)
     write_image([bg, lolli.layer])

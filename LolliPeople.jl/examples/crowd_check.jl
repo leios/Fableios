@@ -19,6 +19,7 @@ function check_crowd_example(num_particles, num_iterations;
                                            translation_1,
                                            translation_2))
 
+    return lolli
 
     run!(lolli)
     write_image([bg, lolli.layer]; filename = filename)

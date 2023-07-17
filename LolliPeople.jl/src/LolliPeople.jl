@@ -16,6 +16,17 @@ mutable struct LolliLayer
     body_transforms::Union{Tuple, FractalOperator,
                            Vector{FractalOperator},
                            Nothing}
+
+    pre_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
+    pre_object_transforms::Union{Tuple, FractalOperator,
+                                 Vector{FractalOperator},
+                                 Nothing, Vector{Nothing}}
+
+    post_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
+    post_object_transforms::Union{Tuple, FractalOperator,
+                                  Vector{FractalOperator},
+                                  Nothing, Vector{Nothing}}
+
     eyes::Union{Nothing, FractalUserMethod}
     body_color::FractalUserMethod
 
