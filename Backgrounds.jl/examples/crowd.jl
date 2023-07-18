@@ -1,7 +1,7 @@
 using Fable, LolliPeople, Backgrounds, Images
 
 function crowd_example(num_particles, num_iterations; ArrayType = Array,
-                       lollis_per_row = 5, num_rows = 1, scale = 0.25)
+                       lollis_per_row = 5, num_rows = 1, scale = 0.1)
     bg = ColorLayer(RGBA(0.5, 0.5, 0.5, 1); ArrayType = ArrayType)
 
     chair = create_bench(; width = scale, height = 0.5*scale)
@@ -15,8 +15,7 @@ function crowd_example(num_particles, num_iterations; ArrayType = Array,
                        chair_idx = 1
                        ) for i = 1:num_rows]
     create_crowd!(lolli, rows)
-    return lolli
 
     run!(lolli)
-    write_image([bg, lolli.layer])
+    write_image([bg, lolli.layer]; filename = "out.png")
 end 

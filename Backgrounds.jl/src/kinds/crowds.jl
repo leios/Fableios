@@ -26,22 +26,18 @@ struct Row <: AbstractCrowd
 end
 
 # right now, this assumes the only pre-layer is a chair
-function create_H_set(row::Row; num_pre_layers = 0, num_post_layers = 0)
-    if row.chair_idx > 0
-        num_pre_layers += 1
+function create_H_set(row::Row; chair = false)
+    if chair
+        fill_percentage = 1.0
+    else
+        fill_percentage = row.fill_percentage
     end
 
     start_location = (row.location[1],
                       row.location[2] - 0.5*row.num_lollis*row.spacing)
 
-    if row.chair_idx > 0
-        chair_set = (fo(translate(translation = start_location)),)
-    else
-        chair_set = nothing
-    end
-
     # creating H_set for each lolli
-    if rand() < row.fill_percentage
+    if rand() < fill_percentage
         H_set = (fo(translate(translation = start_location),
                  rand(row.color_distribution)),)
     else
@@ -50,38 +46,20 @@ function create_H_set(row::Row; num_pre_layers = 0, num_post_layers = 0)
 
     for i = 2:row.num_lollis
         new_location = (start_location[1], start_location[2]+row.spacing*(i-1))
-        if row.chair_idx > 0
-            chair_set = (chair_set...,
-                         fo(translate(translation = new_location)))
-        end
 
-        if rand() < row.fill_percentage
+        if rand() < fill_percentage
             H_set = (H_set..., fo(translate(translation = new_location),
                                rand(row.color_distribution)))
         end
     end
 
-    if length(H_set) > 0
-        # distributing across all layers (chair, head, body, etc)
-        H_set = (H_set, H_set)
-        for i = 1:num_pre_layers
-            H_set = (H_set[1], H_set...)
-        end
-        for i = 1:num_post_layers
-            H_set = (H_set..., H_set)
-        end
-    else
-        H_set = nothing
-    end
-
     return H_set
 end
 
-function create_H_set(rows::Vector{Row};
-                      num_pre_layers = 0, num_post_layers = 1)
+function create_H_set(rows::Vector{Row}; chair = false)
     H_set = create_H_set(rows[1])
     for i = 2:length(rows)
-        new_set = create_H_set(rows[i])
+        new_set = create_H_set(rows[i], chair)
         H_set = Tuple([(H_set[i]..., new_set[i]...) for i = 1:length(H_set)])
     end
 
@@ -95,9 +73,23 @@ function create_row(; num_lollis = 0, color_distribution = [Shaders.black],
                space, location, chair_idx, fill_percentage)
 end
 
-function create_crowd!(base_lolli::LolliLayer, rows::Vector{Row})
-    H_set = create_H_set(rows)
-    base_lolli.layer.H_post = Hutchinson(H_set)
+function create_crowd!(lolli::LolliLayer, rows::Vector{Row})
+    H_set = fo(create_H_set(rows))
+    if rows[1].chair_idx != 0
+        chair_set = fo(create_H_set(rows; chair = true))
+    end
+    lolli.head_transforms = H_set
+    lolli.body_transforms = H_set
+    if lolli.post_objects != nothing
+        lolli.post_object_transforms =
+            [H_set for i = 1:length(lolli.post_objects)]
+    end
+    if lolli.pre_objects != nothing
+        pre_object_array = [H_set for i = 1:length(lolli.pre_objects)]
+        pre_object_array[rows[1].chair_idx] = chair_set
+        lolli.pre_object_transforms = pre_object_array
+    end
+    rebuild_operators!(lolli)
 end
 
 #------------------------------------------------------------------------------#
