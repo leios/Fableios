@@ -126,7 +126,7 @@ function LolliLayer(; scale = 1.0,
                          num_iterations = num_iterations,
                          ppu = ppu, world_size = world_size,
                          position = layer_position, ArrayType = ArrayType,
-                         H = H, H_post = H_post)
+                         H = H, H_post = H_post, overlay = true)
 
     return LolliLayer(layer, head, head_transforms,
                       body, body_transforms,

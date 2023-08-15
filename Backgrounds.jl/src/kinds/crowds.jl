@@ -34,12 +34,14 @@ function create_H_set(row::Row; chair = false)
     end
 
     start_location = (row.location[1],
-                      row.location[2] - 0.5*row.num_lollis*row.spacing)
+                      row.location[2] - 0.5*(row.num_lollis-1)*row.spacing)
 
     # creating H_set for each lolli
     if rand() < fill_percentage
         H_set = (fo(translate(translation = start_location),
-                 rand(row.color_distribution)),)
+                 Shaders.previous),)
+        #H_set = (fo(translate(translation = start_location),
+        #         rand(row.color_distribution)),)
     else
         H_set = ()
     end
@@ -49,7 +51,9 @@ function create_H_set(row::Row; chair = false)
 
         if rand() < fill_percentage
             H_set = (H_set..., fo(translate(translation = new_location),
-                               rand(row.color_distribution)))
+                               Shaders.previous))
+            #H_set = (H_set..., fo(translate(translation = new_location),
+            #                   rand(row.color_distribution)))
         end
     end
 
@@ -57,17 +61,17 @@ function create_H_set(row::Row; chair = false)
 end
 
 function create_H_set(rows::Vector{Row}; chair = false)
-    H_set = create_H_set(rows[1])
+    H_set = create_H_set(rows[1]; chair)
     for i = 2:length(rows)
-        new_set = create_H_set(rows[i], chair)
-        H_set = Tuple([(H_set[i]..., new_set[i]...) for i = 1:length(H_set)])
+        new_set = create_H_set(rows[i]; chair)
+        H_set = (H_set..., new_set...)
     end
 
     return H_set
 end
 
 function create_row(; num_lollis = 0, color_distribution = [Shaders.black],
-                      scale = 0.5, space = 0.5, location = (0,0),
+                      scale = 0.5, space = scale, location = (0,0),
                       chair_idx = 0, fill_percentage = 1)
     return Row(num_lollis, color_distribution, scale,
                space, location, chair_idx, fill_percentage)
@@ -111,6 +115,6 @@ end
 function create_bench(; location = (0,0), width = 0.5, height = 0.25,
                         color = bench_shader(scale = height, 
                                              y_location = location[1]))
-    return define_rectangle(; scale_x = height, scale_y = width, color = color,
+    return define_rectangle(; scale_y = height, scale_x = width, color = color,
                               position = (height*0.5, 0))
 end
