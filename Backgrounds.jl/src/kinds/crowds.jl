@@ -12,7 +12,7 @@ export create_row, create_crowd!, create_bench
 abstract type AbstractCrowd end;
 
 translate = @fum function translate(y,x; translation = (0,0))
-    return point(y+translation[1], x+translation[2])
+    @inbounds return point(y+translation[1], x+translation[2])
 end
 
 struct Row <: AbstractCrowd
@@ -102,11 +102,13 @@ end
 
 bench_shader = @fum color function bench_shader(y, x; scale, y_location,
                                                 base_color = (0.5, 0.5, 0.5, 1))
-    ratio = (y-y_location-scale*0.5)/scale
-    red = base_color[1]*ratio
-    green = base_color[2]*ratio
-    blue = base_color[3]*ratio
-    alpha = base_color[4]*ratio
+    @inbounds begin
+        ratio = (y-y_location-scale*0.5)/scale
+        red = base_color[1]*ratio
+        green = base_color[2]*ratio
+        blue = base_color[3]*ratio
+        alpha = base_color[4]*ratio
+    end
 
     return RGBA{Float32}(red, green, blue, alpha)
     
