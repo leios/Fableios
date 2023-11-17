@@ -9,6 +9,18 @@
 #          This approach will not work for reflections off of surfaces
 #------------------------------------------------------------------------------#
 
+export Caustics
+
+module Caustics
+import Fable.@fum
+import Fable.FPS
+import Fable.point
+
+function normalize(t::Tuple{N1,N2}) where {N1 <: Number, N2 <: Number}
+    mag = sqrt(t[1]^2 + t[2]^2)
+    return (t[1]/mag, t[2]/mag)
+end
+
 abstract type AbstractWave end;
 
 struct NullWave <: AbstractWave
@@ -74,8 +86,9 @@ function water_wavespeed(wavelength; depth = wavelength)
     end
 end
 
-function water_surface_probe(position, wave::AbstractWave, time; dims = 2)
-    return 0
+function water_surface_probe(position, wave::WT, time;
+                             dims = 2) where WT <: AbstractWave
+    return 0.0
 end
 
 function water_surface_probe(position, wave::Wake, time; dims = 2)
@@ -149,45 +162,49 @@ function water_surface!(surface::AT, waves, time;
     end
 end
 
-# This assumes there is a single beam of light shooting from the sky onto
-# a plane at the bottom of the pool
-@fum function pool_caustics(y, x, frame;
-                            waves::T = nothing, depth = 1.0) where T <: Nothing
-    return point(y, x)
+function water_surface(res, bounds, waves, time; ArrayType = Array)
+    surface = ArrayType(zeros(res))
+    water_surface!(surface, waves, time; bounds)
+    return surface
 end
 
-@fum function pool_caustics(y, x, frame; epsilon = 0.1,
-                            wave::T = NullWave, depth = 1.0) where T <: Tuple
-    time = time(frame)
-
+# This assumes there is a single beam of light shooting from the sky onto
+# a plane at the bottom of the pool
+# Note: probably should use 3d instead of 2d here...
+function top_down_refract(y, x, time, waves, epsilon, depth)
     # find the correct height based on the intensity at a particular location
-    intensity = water_surface_probe((y, x), wave, time)
+    intensity = water_surface_probe((y, x), waves, time)
 
     depth += intensity
 
-    dx = intensity - water_surface_probe((y, x+epsilon), wave, time)
-    dy = intensity - water_surface_probe((y+epsilon, x), wave, time)
+    dx = intensity - water_surface_probe((y, x+epsilon), waves, time)
+    dy = intensity - water_surface_probe((y+epsilon, x), waves, time)
 
     # Snell's law: https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-    index_ratio = 1.0 / 1.33 # Air to water
-    normal_y = (epsilon, dy)
-    normal_x = (epsilon, dx)
+    # Air to water Index of Refraction Ratio
+    ratio = 1.0 / 1.33
+    normal_y = normalize((dy, epsilon))
+    normal_x = normalize((dx, epsilon))
 
-    ray = (0, 1)
+    ray = (0, -1)
 
-    c_y = sum(-normal_y.*ray)
-    c_x = sum(-normal_x.*ray)
+    c_y = sum(-1 .* normal_y .* ray)
+    c_x = sum(-1 .* normal_x .* ray)
 
-    out_y = ratio .* ray .+ (ratio*c_y-sqrt(1-ratio^2*(1-c^2))).*normal_y)
-    out_x = ratio .* ray .+ (ratio*c_x-sqrt(1-ratio^2*(1-c^2))).*normal_x)
+    out_y = ratio .* ray .+ ((ratio*c_y - sqrt(1-ratio^2*(1-c_y^2))).*normal_y)
+    out_x = ratio .* ray .+ ((ratio*c_x - sqrt(1-ratio^2*(1-c_x^2))).*normal_x)
 
-    # find out intersection with plane
-    return point(y + depth*(out_y[2]/out_y[1]), x + depth*(out_x[2]/out_x[1]))
+    # return slopes only
+    return (out_y[1]/out_y[2], out_x[1]/out_x[2])
 end
 
-@fum function pool_caustics(y, x, frame; waves::T = (NullWave,),
-                            depth = 1.0) where T <: AbstractWave
-    for i = 1:length(waves)
-    end
-    return point(y, x)
+pool_caustics = @fum function pool_caustics(y, x, frame; epsilon = 0.1,
+                                            waves = NullWave(), depth = 1.0)
+    time = frame / FPS
+
+    slopes = top_down_refract(y, x, time, waves, epsilon, depth)
+
+    # find out intersection with plane
+    return point(y + depth*(slopes[1]), x + depth*(slopes[2]))
+end
 end
