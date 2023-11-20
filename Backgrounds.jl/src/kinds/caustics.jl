@@ -21,6 +21,14 @@ function normalize(t::Tuple{N1,N2}) where {N1 <: Number, N2 <: Number}
     return (t[1]/mag, t[2]/mag)
 end
 
+function normalize(t::Tuple{N1,N2,N3}) where {N1 <: Number,
+                                              N2 <: Number,
+                                              N3 <: Number}
+    mag = sqrt(t[1]^2 + t[2]^2 + t[3]^2)
+    return (t[1]/mag, t[2]/mag, t[3]/mag)
+end
+
+
 abstract type AbstractWave end;
 
 struct NullWave <: AbstractWave
@@ -185,19 +193,16 @@ function top_down_refract(y, x, time, waves, epsilon, depth)
     # Snell's law: https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
     # Air to water Index of Refraction Ratio
     ratio = 1.0 / 1.33
-    normal_y = normalize((dy, epsilon))
-    normal_x = normalize((dx, epsilon))
+    normal = normalize((dx, dy, epsilon))
 
-    ray = (0, -1)
+    ray = (0, 0, -1)
 
-    c_y = sum(-1 .* normal_y .* ray)
-    c_x = sum(-1 .* normal_x .* ray)
+    c = sum(-1 .* normal .* ray)
 
-    out_y = ratio .* ray .+ ((ratio*c_y - sqrt(1-ratio^2*(1-c_y^2))).*normal_y)
-    out_x = ratio .* ray .+ ((ratio*c_x - sqrt(1-ratio^2*(1-c_x^2))).*normal_x)
+    out = ratio .* ray .+ ((ratio*c - sqrt(1-ratio^2*(1-c^2))).*normal)
 
     # return slopes only
-    return (out_y[1]/out_y[2], out_x[1]/out_x[2])
+    return (out[2]/out[3], out[1]/out[3])
 end
 
 pool_caustics = @fum function pool_caustics(y, x, frame; epsilon = 0.1,
