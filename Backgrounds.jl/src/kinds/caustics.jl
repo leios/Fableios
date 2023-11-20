@@ -98,6 +98,8 @@ function water_surface_probe(position, wave::VerticalWave, time; dims = 2)
     wavespeed = water_wavespeed(wave.wavelength)
     position = (position[2]*sin(wave.angle) + position[1]*cos(wave.angle),
                 position[2]*cos(wave.angle) - position[1]*sin(wave.angle))
+
+    position = position .+ wave.position
     
     if position[1] >= 0 &&
        time >= wave.start_time + position[1]/wavespeed &&
@@ -136,7 +138,7 @@ end
 function water_surface_probe(position, waves::Tuple, time; dims = 2)
     val = 0.0
     for wave in waves
-        val += water_surface_probe(y, x, wave, time; dims)
+        val += water_surface_probe(position, wave, time; dims)
     end
     return val
 end

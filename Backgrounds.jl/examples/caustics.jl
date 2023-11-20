@@ -1,7 +1,7 @@
 using Fable, Plots, Backgrounds, Colors
 
 function plot_waves(res, bounds, waves, start_time, end_time, dt;
-                    ArrayType = Array)
+                    ArrayType = Array, filebase = "wave")
     time = start_time
     count = 0
     s = ArrayType(zeros(res))
@@ -9,7 +9,7 @@ function plot_waves(res, bounds, waves, start_time, end_time, dt;
         Caustics.water_surface!(s, waves, time; bounds)
 
         plt = heatmap(s)
-        filename = "out"*lpad(count, 5, "0")*".png"
+        filename = filebase*lpad(count, 5, "0")*".png"
         println(filename)
         savefig(plt, filename)
 
@@ -36,7 +36,7 @@ function test_caustics(num_particles, num_iterations, waves,
                       logscale = true)
     layers = [bl, fl]
     count = 0 
-    time = start_time
+    time = Float64(start_time)
     while time <= end_time
         run!(layers, frame = current_frame(time))
         write_image(layers; filename = filebase*lpad(count, 5, "0")*".png")
