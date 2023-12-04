@@ -180,7 +180,6 @@ end
 
 # This assumes there is a single beam of light shooting from the sky onto
 # a plane at the bottom of the pool
-# Note: probably should use 3d instead of 2d here...
 function top_down_refract(y, x, time, waves, epsilon, depth)
     # find the correct height based on the intensity at a particular location
     intensity = water_surface_probe((y, x), waves, time)
@@ -214,4 +213,33 @@ pool_caustics = @fum function pool_caustics(y, x, frame; epsilon = 0.1,
     # find out intersection with plane
     return point(y + depth*(slopes[1]), x + depth*(slopes[2]))
 end
+
+function top_down_reflect(y, x, time, waves, epsilon, height)
+    # find the correct height based on the intensity at a particular location
+    intensity = water_surface_probe((y, x), waves, time)
+
+    depth += intensity
+
+    dx = intensity - water_surface_probe((y, x+epsilon), waves, time)
+    dy = intensity - water_surface_probe((y+epsilon, x), waves, time)
+
+    normal = normalize((dx, dy, epsilon))
+    ray = (0, 0, -1)
+
+    out = ray .+ (2*sum(ray .* normal)) .* normal
+
+    # return slopes only
+    return (out[2]/out[3], out[1]/out[3])
+end
+
+pool_reflect = @fum function pool_reflect(y, x, frame; epsilon = 0.1,
+                                          waves = NullWave(), height = 1.0)
+    time = frame / FPS
+
+    slopes = top_down_refract(y, x, time, waves, epsilon, height)
+
+    # find out intersection with plane
+    return point(y + depth*(slopes[1]), x + depth*(slopes[2]))
+end
+
 end

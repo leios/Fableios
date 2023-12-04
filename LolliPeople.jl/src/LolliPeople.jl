@@ -1,7 +1,6 @@
 module LolliPeople
 using Fable
 using Images
-using KernelAbstractions
 
 export LolliLayer, LolliPerson
 
