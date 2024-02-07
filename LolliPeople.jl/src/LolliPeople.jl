@@ -1,7 +1,6 @@
 module LolliPeople
 using Fable
 using Images
-using KernelAbstractions
 
 export LolliLayer, LolliPerson
 
@@ -9,13 +8,24 @@ mutable struct LolliLayer
     layer::FractalLayer
 
     head::FractalOperator
-    head_transformations::Union{FractalOperator,
-                                Vector{FractalOperator},
-                                Nothing}
+    head_transforms::Union{Tuple, FractalOperator,
+                           Vector{FractalOperator},
+                           Nothing}
     body::FractalOperator
-    body_transformations::Union{FractalOperator,
-                                Vector{FractalOperator},
-                                Nothing}
+    body_transforms::Union{Tuple, FractalOperator,
+                           Vector{FractalOperator},
+                           Nothing}
+
+    pre_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
+    pre_object_transforms::Union{Tuple, FractalOperator,
+                                 Vector{FractalOperator},
+                                 Nothing, Vector{Nothing}}
+
+    post_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
+    post_object_transforms::Union{Tuple, FractalOperator,
+                                  Vector{FractalOperator},
+                                  Nothing, Vector{Nothing}}
+
     eyes::Union{Nothing, FractalUserMethod}
     body_color::FractalUserMethod
 

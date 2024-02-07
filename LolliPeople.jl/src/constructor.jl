@@ -1,15 +1,42 @@
-export LolliLayer, LolliPerson
+export LolliLayer, LolliPerson, set_transforms!, rebuild_operators!
 
+function define_lolli_Hs(transforms, post_transforms)
+
+    kept_transforms = FractalOperator[]
+    keep_post_transforms = false
+    if !minimum(isnothing.(post_transforms))
+        keep_post_transforms = true
+        kept_post_transforms = FractalOperator[]
+    else
+        H_post = nothing
+    end
+
+    for i = 1:length(transforms)
+        if !isnothing(transforms[i])
+            push!(kept_transforms, fo(transforms[i]))
+            if keep_post_transforms
+                push!(kept_post_transforms, fo(post_transforms[i]))
+            end
+        end
+    end
+
+    H = Hutchinson(kept_transforms)
+    if keep_post_transforms
+        H_post = Hutchinson(kept_post_transforms)
+    end
+
+    return H, H_post
+end
 
 function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
                 ArrayType = Array, FloatType = Float32,
                 logscale = false, gamma = 2.2, calc_max_value = false,
                 max_value = 1, num_ignore = 20, num_particles = 1000,
                 num_iterations = 1000, dims = 2, solver_type = :random,
-                size = 1.0,
-                head_position = (-0.25*size, 0.0), head_radius = size*0.25,
-                foot_position = (0.5*size, 0.0), body_width = 0.1*size,
-                body_height = 0.45*size, body_position = (0.275*size, 0.0))
+                scale = 1.0,
+                head_position = (-0.25*scale, 0.0), head_radius = scale*0.25,
+                foot_position = (0.5*scale, 0.0), body_width = 0.1*scale,
+                body_height = 0.45*scale, body_position = (0.275*scale, 0.0))
 
     return (numthreads = numthreads,
             numcores = numcores,
@@ -24,7 +51,7 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
             num_iterations = num_iterations,
             dims = dims,
             solver_type = solver_type,
-            size = size,
+            scale = scale,
             head_position = head_position,
             head_radius = head_radius,
             foot_position = foot_position,
@@ -33,13 +60,13 @@ function params(a::Type{LolliLayer}; numthreads = 256, numcores = 4,
             body_position = body_position)
 end
 
-function LolliLayer(; size = 1.0,
-                      head_position = (-0.25*size, 0.0),
-                      head_radius = size*0.25,
-                      foot_position = (0.5*size, 0.0),
-                      body_width = 0.1*size,
-                      body_height = 0.45*size,
-                      body_position = (0.275*size, 0.0),
+function LolliLayer(; scale = 1.0,
+                      head_position = (-0.25*scale, 0.0),
+                      head_radius = scale*0.25,
+                      foot_position = (0.5*scale, 0.0),
+                      body_width = 0.1*scale,
+                      body_height = 0.45*scale,
+                      body_position = (0.275*scale, 0.0),
                       body_color = Shaders.black,
                       ArrayType = Array,
                       ppu = 1200,
@@ -48,10 +75,14 @@ function LolliLayer(; size = 1.0,
                       num_iterations = 1000,
                       postprocessing_steps = Vector{AbstractPostProcess}([]),
                       eye_fum::Union{FractalUserMethod, Nothing} = nothing,
-                      head_transformations = nothing,
-                      body_transformations = nothing,
+                      head_transforms = nothing,
+                      body_transforms = nothing,
                       additional_fis = Vector{FractalInput}([]),
-                      set_as_fis = false)
+                      set_as_fis = false,
+                      pre_objects::Union{Vector, Tuple} = [nothing],
+                      post_objects::Union{Vector, Tuple} = [nothing],
+                      pre_object_transforms::Union{Vector, Tuple} = [nothing],
+                      post_object_transforms::Union{Vector, Tuple} = [nothing])
     if set_as_fis
         head_position = fi(:head_position, value(head_po)sition)
         head_radius = fi(:head_radius, value(head_radius))
@@ -71,12 +102,12 @@ function LolliLayer(; size = 1.0,
 
     if eye_fum == nothing
         eye_fum = simple_eyes(head_position = head_position,
-                              inter_eye_distance = size * 0.15,
-                              size = size)
+                              inter_eye_distance = scale * 0.15,
+                              scale = scale)
     end
 
     postprocessing_steps = vcat([CopyToCanvas()], postprocessing_steps)
-    layer_position = (foot_position[1] - size*0.5, foot_position[2])
+    layer_position = (foot_position[1] - scale*0.5, foot_position[2])
     body = define_rectangle(; position = body_position,
                               rotation = 0.0,
                               scale_x = body_width,
@@ -87,67 +118,80 @@ function LolliLayer(; size = 1.0,
                            radius = head_radius,
                            color = (body_color, eye_fum))
 
-    H = Hutchinson([body, head])
-    if isnothing(body_transformations) && isnothing(head_transformations)
-        H_post = nothing
-    else
-        H_post = Hutchinson([fo(body_transformations), fo(head_transformations)])
-    end
+    H, H_post = define_lolli_Hs([pre_objects..., body, head, post_objects...],
+                                [pre_object_transforms..., body_transforms,
+                                 head_transforms, post_object_transforms...])
+
     layer = FractalLayer(num_particles = num_particles,
                          num_iterations = num_iterations,
                          ppu = ppu, world_size = world_size,
                          position = layer_position, ArrayType = ArrayType,
-                         H = H, H_post = H_post)
+                         H = H, H_post = H_post, overlay = true)
 
-    return LolliLayer(layer, head, head_transformations,
-                      body, body_transformations, eye_fum, body_color,
-                      layer_position, world_size, ppu, p,
+    return LolliLayer(layer, head, head_transforms,
+                      body, body_transforms,
+                      pre_objects, pre_object_transforms,
+                      post_objects, post_object_transforms,
+                      eye_fum, body_color, layer_position, world_size, ppu, p,
                       postprocessing_steps, additional_fis)
-
 
 end
 
 function set_transforms!(lolli::LolliLayer, fum::FractalUserMethod;
-                         layer = :both, additional_fis = FractalInput[])
-    set_transforms!(lolli, fo(fum, Shaders.previous); layer = layer,
-                    additional_fis = additional_fis)
+                         layers = [:head, :body],
+                         additional_fis = FractalInput[])
+    set_transforms!(lolli, fo(fum, Shaders.previous); layers,
+                    additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer, fums::Vector{FUM};
                          additional_fis = FractalInput[],
-                         layer = :both) where FUM <: FractalUserMethod
+                         layers = [:head, :body]) where FUM <: FractalUserMethod
     set_transforms!(lolli,
                     [fo(fums[i], Shaders.previous) for i = 1:length(fums)];
-                    layer = layer, additional_fis = additional_fis)
+                    layers = layers, additional_fis = additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer,
                          fum::FractalUserMethod, color_fum::FractalUserMethod;
-                         layer = :both, additional_fis = FractalInput[])
+                         layers = [:head, :body],
+                         additional_fis = FractalInput[])
     fo = fractalOperator(fum, color_fum)
-    set_transforms!(lolli, fo; layer = layer, additional_fis = additional_fis)
+    set_transforms!(lolli, fo; layers = layers, additional_fis = additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer,
                          fums::Vector{FractalUserMethod},
                          color_fums::Vector{FractalUserMethod},
-                         layer = :both, additional_fis = FractalInput[])
+                         layers = [:head, :body],
+                         additional_fis = FractalInput[])
     fos = [fractalOperator(fums[i], color_fums[i]) for i = 1:length(fums)]
-    set_transforms!(lolli, fos; layer = layer, additional_fis = additional_fis)
+    set_transforms!(lolli, fos; layers, additional_fis)
 end
 
-function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
+function set_transforms!(lolli::LolliLayer, fo::FractalOperator;
+                         layers = [:head, :body],
                          additional_fis = FractalInput[])
-    if layer == :head
-        lolli.head_transformations = fo
-    elseif layer == :body
-        lolli.body_transformations = fo
-    else
-        lolli.head_transformations = fo
-        lolli.body_transformations = fo
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fo
+        elseif layers[i] == :body
+            lolli.body_transforms = fo
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fo
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fo
+        elseif layers[i] == :all
+            lolli.head_transforms = fo
+            lolli.body_transforms = fo
+            lolli.pre_object_transforms = fo
+            lolli.post_object_transforms = fo
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
 
-    rebuild_operators(lolli)
+    rebuild_operators!(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
@@ -156,44 +200,67 @@ function set_transforms!(lolli::LolliLayer, fo::FractalOperator; layer = :both,
 end
 
 function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
-                         layer = :both, additional_fis = FractalInput[])
-    if layer == :head
-        lolli.head_transformations = fos
-    elseif layer == :body
-        lolli.body_transformations = fos
-    else
-        lolli.head_transformations = fos
-        lolli.body_transformations = fos
+                         layers = [:head, :body],
+                         additional_fis = FractalInput[])
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fos
+        elseif layers[i] == :body
+            lolli.body_transforms = fos
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fos
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fos
+        elseif layers[i] == :all
+            lolli.head_transforms = fos
+            lolli.body_transforms = fos
+            lolli.pre_object_transforms = fos
+            lolli.post_object_transforms = fos
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
 
-    rebuild_operators(lolli)
+    rebuild_operators!(lolli)
 
     if length(additional_fis) > 0
         lolli.additional_fis = vcat(lolli.additional_fis, additional_fis)
     end
 end
 
-function reset_transforms!(lolli; layer = :both)
-    if layer == :head
-        lolli.head_transformations = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
-                                         fo(lolli.head_transformations)])
-    elseif layer == :body
-        lolli.body_transformations = fo(Smears.null, Shaders.null)
-        lolli.layer.H_post = Hutchinson([fo(lolli.body_transformations),
-                                         fo(lolli.head_transformations)])
-    else
-        lolli.head_transformations = nothing
-        lolli.body_transformations = nothing
-        lolli.layer.H_post = nothing
+function reset_transforms!(lolli; layers = [:head, :body])
+    for i = 1:length(layers)
+        if layers[i] == :head
+            lolli.head_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :body
+            lolli.body_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :pre_objects
+            lolli.pre_object_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :post_objects
+            lolli.post_object_transforms = fo(Smears.null, Shaders.null)
+        elseif layers[i] == :all
+            lolli.head_transforms = nothing
+            lolli.body_transforms = nothing
+            lolli.pre_object_transforms = nothing
+            lolli.post_object_transforms = nothing
+            lolli.layer.H_post = nothing
+        else
+            @warn("Layer "*string(layers[i])*"not available! Skipping...")
+        end
     end
+
+    rebuild_operators!(lolli)
 
 end
 
-function rebuild_operators(lolli)
-    H = Hutchinson([lolli.body, lolli.head])
-    H_post = Hutchinson([fo(lolli.body_transformations),
-                         fo(lolli.head_transformations)])
+function rebuild_operators!(lolli)
+    H, H_post = define_lolli_Hs([lolli.pre_objects...,
+                                 lolli.body, lolli.head,
+                                 lolli.post_objects...],
+                                [lolli.pre_object_transforms...,
+                                 lolli.body_transforms,
+                                 lolli.head_transforms,
+                                 lolli.post_object_transforms...])
     lolli.layer.H = H
     lolli.layer.H_post = H_post
 end

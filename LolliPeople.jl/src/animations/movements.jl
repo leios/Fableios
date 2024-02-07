@@ -5,8 +5,8 @@ export rotate, translate, lean_head, lean_body, jump_smear, bounce!, jump!,
 # Transforms
 #------------------------------------------------------------------------------#
 
-rotate = @fum function rotate(x, y; angle = 0.0, pivot = (0,0),
-                              translation = (0,0))
+rotate = @fum inbounds=true function rotate(x, y; angle = 0.0, pivot = (0,0),
+                                            translation = (0,0))
     y_temp = y - pivot[1]
     x_temp = x - pivot[2]
 
@@ -24,10 +24,11 @@ end
 # Jump / Bounce
 #------------------------------------------------------------------------------#
 
-jump_smear = @fum function jump_smear(x, y; foot_position = (0.0, 0.0),
-                                      stretch_factor = 1.0,
-                                      body_height = 1.0,
-                                      jump_height = 0.0)
+jump_smear = @fum inbounds=true function jump_smear(x, y;
+                                                    foot_position = (0.0, 0.0),
+                                                    stretch_factor = 1.0,
+                                                    body_height = 1.0,
+                                                    jump_height = 0.0)
     y += (stretch_factor*(y - foot_position[1])/body_height) - 
          (jump_height*(1-(foot_position[1] - y)/body_height))
     x *= 1/(1+2*(stretch_factor - jump_height))
@@ -35,7 +36,7 @@ jump_smear = @fum function jump_smear(x, y; foot_position = (0.0, 0.0),
 end
 
 function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
-                 max_bounce_height = 0.1*lolli.params.size)
+                 max_bounce_height = 0.1*lolli.params.scale)
 
     factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_bounce_height
     dfactor = factor-(sin(2*pi*(curr_frame-1)/
@@ -57,7 +58,7 @@ function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
 end
 
 function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
-               max_jump_height = 0.1*lolli.params.size)
+               max_jump_height = 0.1*lolli.params.scale)
 
     factor = sin(2*pi*(curr_frame)/(end_frame - start_frame))*max_jump_height
     dfactor = factor-(sin(2*pi*(curr_frame-1)/
@@ -91,11 +92,11 @@ end
 # Lean
 #------------------------------------------------------------------------------#
 
-lean_head = @fum function lean_head(x, y;
-                                    foot_position = (0.0, 0.0),
-                                    head_radius = 0.25,
-                                    lean_velocity = 0.0,
-                                    lean_angle = 0.0)
+lean_head = @fum inbounds=true function lean_head(x, y;
+                                                 foot_position = (0.0, 0.0),
+                                                 head_radius = 0.25,
+                                                 lean_velocity = 0.0,
+                                                 lean_angle = 0.0)
     y_temp = y - foot_position[1]
     x_temp = x - foot_position[2]
 
@@ -107,11 +108,11 @@ lean_head = @fum function lean_head(x, y;
     return point(y,x)
 end
 
-lean_body = @fum function lean_body(x, y;
-                                    height = 1.0,
-                                    foot_position = (0,0),
-                                    lean_velocity = 0.0,
-                                    lean_angle = 0.0)
+lean_body = @fum inbounds=true function lean_body(x, y;
+                                                  height = 1.0,
+                                                  foot_position = (0,0),
+                                                  lean_velocity = 0.0,
+                                                  lean_angle = 0.0)
     x_temp = x - foot_position[2]
     y_temp = y - foot_position[1]
 
@@ -147,13 +148,13 @@ crouch = @fum function crouch(y, x, frame; foot_position = (0,0), head = false,
         if head
             y += shrink_factor*body_height
         else
-            y -= ((y - foot_position[1]))*shrink_factor
+            @inbounds y -= ((y - foot_position[1]))*shrink_factor
         end
 
         if head
-            x += translation[2]
+            @inbounds x += translation[2]
         else
-            x = x*min(1.5,1/(1-shrink_factor)) + translation[2]
+            @inbounds x = x*min(1.5,1/(1-shrink_factor)) + translation[2]
         end
 
     end
@@ -179,14 +180,14 @@ leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
             movement_ratio = 1
         end
 
-        max_lean = min(pi/4, (p2[2] - p1[2])/(body_height*10))
+        @inbounds max_lean = min(pi/4, (p2[2] - p1[2])/(body_height*10))
         lean_angle = max_lean * sin(2*pi*ratio)
         jump_height *= movement_ratio*sin(pi*movement_ratio)
         shrink_factor = shrink_factor - shrink_factor*sin(pi*movement_ratio) +
                         jump_height
 
-        y_temp = y - foot_position[1]
-        x_temp = x - foot_position[2]
+        @inbounds y_temp = y - foot_position[1]
+        @inbounds x_temp = x - foot_position[2]
 
         if head
             y_temp += shrink_factor*body_height
@@ -203,11 +204,11 @@ leap = @fum function leap(y, x, frame; start_frame = 0, end_frame = 0,
 
         end
 
-        y += p1[1] + (p2[1] - p1[1])*movement_ratio - jump_height
-        x += p1[2] + (p2[2] - p1[2])*movement_ratio
+        @inbounds y += p1[1] + (p2[1] - p1[1])*movement_ratio - jump_height
+        @inbounds x += p1[2] + (p2[2] - p1[2])*movement_ratio
 
-        y += foot_position[1]
-        x += foot_position[2]
+        @inbounds y += foot_position[1]
+        @inbounds x += foot_position[2]
     end
 
     return point(y, x)
@@ -230,7 +231,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p1,
                                       body_height = lolli.params.body_height);
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
                                       head = true,
@@ -238,7 +239,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p1,
                                       body_height = lolli.params.body_height);
-                        layer = :head)
+                        layers = [:head])
     elseif cooldown
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
@@ -247,7 +248,7 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p2,
                                       body_height = lolli.params.body_height);
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, crouch(foot_position=lolli.params.foot_position,
                                       shrink_factor = max_shrink,
                                       head = true,
@@ -256,20 +257,20 @@ function set_walk_transforms!(lolli::LolliLayer; startup = false,
                                       end_frame = end_frame,
                                       translation = p2,
                                       body_height = lolli.params.body_height);
-                        layer = :head)
+                        layers = [:head])
     else
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
                                      shrink_factor = max_shrink,
                                      body_height = lolli.params.body_height,
                                      jump_height)];
-                        layer = :body)
+                        layers = [:body])
         set_transforms!(lolli, [leap(;start_frame, end_frame, p1, p2,
                                      foot_position = lolli.params.foot_position,
                                      shrink_factor = max_shrink,
                                      body_height = lolli.params.body_height,
                                      jump_height, head = true)];
-                        layer = :head)
+                        layers = [:head])
     end
 
 end

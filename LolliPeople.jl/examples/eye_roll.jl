@@ -6,8 +6,8 @@ function eyeroll_example(num_particles, num_iterations;
     res = (1080, 1920)
 
     eye_location = fi("eye_location", (0.0, 0.0))
-    eye_operator = simple_eyes(location = eye_location, size = height)
-    lolli = LolliPerson(size = height, eye_fum = eye_operator,
+    eye_operator = simple_eyes(location = eye_location, scale = height)
+    lolli = LolliPerson(scale = height, eye_fum = eye_operator,
                         ArrayType = ArrayType,
                         num_particles = num_particles,
                         num_iterations = num_iterations)

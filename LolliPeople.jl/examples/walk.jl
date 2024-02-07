@@ -8,7 +8,7 @@ function walk_example(num_particles, num_iterations; num_steps = 1,
     bg = ColorLayer(RGBA(0.5, 0.5, 0.5, 1); ArrayType = ArrayType)
     res = (1080, 1920)
 
-    lolli = LolliPerson(size = height; ArrayType = ArrayType,
+    lolli = LolliPerson(scale = height; ArrayType = ArrayType,
                         num_particles = num_particles, 
                         num_iterations = num_iterations)
 
