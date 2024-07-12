@@ -71,7 +71,7 @@ function tossed_ball_example(num_particles, num_iterations;
     smear = fo(Smears.stretch_and_rotate(scale = scale,
                                          object_position = ball_position))
 
-    fl = FractalLayer(H = circle, H_post = smear, ppu = ppu,
+    fl = FableLayer(H = circle, H_post = smear, ppu = ppu,
                       world_size = world_size,
                       ArrayType = ArrayType)
 

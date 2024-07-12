@@ -17,7 +17,7 @@ end
 
 struct Row <: AbstractCrowd
     num_lollis::Int
-    color_distribution::Vector{FUM} where FUM <: FractalUserMethod
+    color_distribution::Vector{FUM} where FUM <: FableUserMethod
     height::Number
     spacing::Number
     location::Tuple{Number, Number}

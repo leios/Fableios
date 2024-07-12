@@ -2,11 +2,11 @@ export LolliLayer, LolliPerson, set_transforms!, rebuild_operators!
 
 function define_lolli_Hs(transforms, post_transforms)
 
-    kept_transforms = FractalOperator[]
+    kept_transforms = FableOperator[]
     keep_post_transforms = false
     if !minimum(isnothing.(post_transforms))
         keep_post_transforms = true
-        kept_post_transforms = FractalOperator[]
+        kept_post_transforms = FableOperator[]
     else
         H_post = nothing
     end
@@ -74,10 +74,10 @@ function LolliLayer(; scale = 1.0,
                       num_particles = 1000,
                       num_iterations = 1000,
                       postprocessing_steps = Vector{AbstractPostProcess}([]),
-                      eye_fum::Union{FractalUserMethod, Nothing} = nothing,
+                      eye_fum::Union{FableUserMethod, Nothing} = nothing,
                       head_transforms = nothing,
                       body_transforms = nothing,
-                      additional_fis = Vector{FractalInput}([]),
+                      additional_fis = Vector{FableInput}([]),
                       set_as_fis = false,
                       pre_objects::Union{Vector, Tuple} = [nothing],
                       post_objects::Union{Vector, Tuple} = [nothing],
@@ -122,7 +122,7 @@ function LolliLayer(; scale = 1.0,
                                 [pre_object_transforms..., body_transforms,
                                  head_transforms, post_object_transforms...])
 
-    layer = FractalLayer(num_particles = num_particles,
+    layer = FableLayer(num_particles = num_particles,
                          num_iterations = num_iterations,
                          ppu = ppu, world_size = world_size,
                          position = layer_position, ArrayType = ArrayType,
@@ -137,41 +137,41 @@ function LolliLayer(; scale = 1.0,
 
 end
 
-function set_transforms!(lolli::LolliLayer, fum::FractalUserMethod;
+function set_transforms!(lolli::LolliLayer, fum::FableUserMethod;
                          layers = [:head, :body],
-                         additional_fis = FractalInput[])
+                         additional_fis = FableInput[])
     set_transforms!(lolli, fo(fum, Shaders.previous); layers,
                     additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer, fums::Vector{FUM};
-                         additional_fis = FractalInput[],
-                         layers = [:head, :body]) where FUM <: FractalUserMethod
+                         additional_fis = FableInput[],
+                         layers = [:head, :body]) where FUM <: FableUserMethod
     set_transforms!(lolli,
                     [fo(fums[i], Shaders.previous) for i = 1:length(fums)];
                     layers = layers, additional_fis = additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer,
-                         fum::FractalUserMethod, color_fum::FractalUserMethod;
+                         fum::FableUserMethod, color_fum::FableUserMethod;
                          layers = [:head, :body],
-                         additional_fis = FractalInput[])
+                         additional_fis = FableInput[])
     fo = fractalOperator(fum, color_fum)
     set_transforms!(lolli, fo; layers = layers, additional_fis = additional_fis)
 end
 
 function set_transforms!(lolli::LolliLayer,
-                         fums::Vector{FractalUserMethod},
-                         color_fums::Vector{FractalUserMethod},
+                         fums::Vector{FableUserMethod},
+                         color_fums::Vector{FableUserMethod},
                          layers = [:head, :body],
-                         additional_fis = FractalInput[])
+                         additional_fis = FableInput[])
     fos = [fractalOperator(fums[i], color_fums[i]) for i = 1:length(fums)]
     set_transforms!(lolli, fos; layers, additional_fis)
 end
 
-function set_transforms!(lolli::LolliLayer, fo::FractalOperator;
+function set_transforms!(lolli::LolliLayer, fo::FableOperator;
                          layers = [:head, :body],
-                         additional_fis = FractalInput[])
+                         additional_fis = FableInput[])
     for i = 1:length(layers)
         if layers[i] == :head
             lolli.head_transforms = fo
@@ -199,9 +199,9 @@ function set_transforms!(lolli::LolliLayer, fo::FractalOperator;
 
 end
 
-function set_transforms!(lolli::LolliLayer, fos::Vector{FractalOperator};
+function set_transforms!(lolli::LolliLayer, fos::Vector{FableOperator};
                          layers = [:head, :body],
-                         additional_fis = FractalInput[])
+                         additional_fis = FableInput[])
     for i = 1:length(layers)
         if layers[i] == :head
             lolli.head_transforms = fos

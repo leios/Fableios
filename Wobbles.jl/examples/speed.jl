@@ -26,7 +26,7 @@ function speed_example(num_particles, num_iterations;
                               wobble_direction = wobble_direction,
                               splat_factor = splat_factor)
     H_post = Hutchinson(fo(wobble_transform, Shaders.previous))
-    layer = FractalLayer(; ArrayType = ArrayType, logscale = false,
+    layer = FableLayer(; ArrayType = ArrayType, logscale = false,
                          world_size = world_size, ppu = ppu,
                          H = shape, H_post = H_post,
                          num_particles = num_particles,

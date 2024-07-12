@@ -1,0 +1,7 @@
+name = "Lips"
+uuid = "bb15a8d1-b034-43b4-92c6-433fc1f5d1ed"
+authors = ["James Schloss <jrs.schloss@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Fable = "a3ea4736-0a3b-4c29-ac8a-20364318a635"

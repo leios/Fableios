@@ -75,14 +75,14 @@ function blink!(lolli::LolliLayer, curr_frame, start_frame, end_frame)
 
     brow_height_idx = find_fi_index(:brow_height, fis)
     if isnothing(brow_height_idx)
-        @warn("Brow height not set as FractalInput. Blinking will not work!")
+        @warn("Brow height not set as FableInput. Blinking will not work!")
     else
         @inbounds set!(fis[brow_height_idx], brow_height)
     end
 
     show_brows_idx = find_fi_index(:show_brows, fis)
     if isnothing(show_brows_idx)
-        @warn("show_brows not set as FractalInput. Blinking will not work!")
+        @warn("show_brows not set as FableInput. Blinking will not work!")
     else
         @inbounds set!(fis[show_brows_idx], show_brows)
     end

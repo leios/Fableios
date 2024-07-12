@@ -5,36 +5,36 @@ using Images
 export LolliLayer, LolliPerson
 
 mutable struct LolliLayer
-    layer::FractalLayer
+    layer::FableLayer
 
-    head::FractalOperator
-    head_transforms::Union{Tuple, FractalOperator,
-                           Vector{FractalOperator},
+    head::FableOperator
+    head_transforms::Union{Tuple, FableOperator,
+                           Vector{FableOperator},
                            Nothing}
-    body::FractalOperator
-    body_transforms::Union{Tuple, FractalOperator,
-                           Vector{FractalOperator},
+    body::FableOperator
+    body_transforms::Union{Tuple, FableOperator,
+                           Vector{FableOperator},
                            Nothing}
 
-    pre_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
-    pre_object_transforms::Union{Tuple, FractalOperator,
-                                 Vector{FractalOperator},
+    pre_objects::Union{Vector{FableOperator}, Nothing, Vector{Nothing}}
+    pre_object_transforms::Union{Tuple, FableOperator,
+                                 Vector{FableOperator},
                                  Nothing, Vector{Nothing}}
 
-    post_objects::Union{Vector{FractalOperator}, Nothing, Vector{Nothing}}
-    post_object_transforms::Union{Tuple, FractalOperator,
-                                  Vector{FractalOperator},
+    post_objects::Union{Vector{FableOperator}, Nothing, Vector{Nothing}}
+    post_object_transforms::Union{Tuple, FableOperator,
+                                  Vector{FableOperator},
                                   Nothing, Vector{Nothing}}
 
-    eyes::Union{Nothing, FractalUserMethod}
-    body_color::FractalUserMethod
+    eyes::Union{Nothing, FableUserMethod}
+    body_color::FableUserMethod
 
     position::Tuple
     world_size::Tuple
     ppu::Number
     params::NamedTuple
     postprocessing_steps::Vector{APP} where APP <: AbstractPostProcess
-    additional_fis::Vector{FractalInput}
+    additional_fis::Vector{FableInput}
 end
 
 Fable.to_canvas!(layer::LolliLayer) = Fable.to_canvas!(layer.layer)

@@ -44,7 +44,7 @@ function bounce!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
 
     stretch_factor_idx = find_fi_index(:stretch_factor, lolli.additional_fis)
     if isnothing(stretch_factor_idx)
-        @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
+        @warn("stretch_factor not set as a FableInput! Bouncing will fail!")
     end
 
     stretch_factor = lolli.additional_fis[stretch_factor_idx]
@@ -66,7 +66,7 @@ function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
     
     stretch_factor_idx = find_fi_index(:stretch_factor, lolli.additional_fis)
     if isnothing(stretch_factor_idx)
-        @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
+        @warn("stretch_factor not set as a FableInput! Bouncing will fail!")
     end
 
     stretch_factor = lolli.additional_fis[stretch_factor_idx]
@@ -74,7 +74,7 @@ function jump!(lolli::LolliLayer, curr_frame, start_frame, end_frame;
 
     jump_height_idx = find_fi_index(:jump_height, lolli.additional_fis)
     if isnothing(jump_height_idx)
-        @warn("stretch_factor not set as a FractalInput! Bouncing will fail!")
+        @warn("stretch_factor not set as a FableInput! Bouncing will fail!")
     end
 
     jump_height = lolli.additional_fis[jump_height_idx]

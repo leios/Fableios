@@ -28,7 +28,7 @@ function test_caustics(num_particles, num_iterations, waves,
 
     square = define_circle(color = Shaders.white)
     H_post = fo(Caustics.pool_caustics(waves = waves))
-    fl = FractalLayer(H = square, H_post = H_post,
+    fl = FableLayer(H = square, H_post = H_post,
                       world_size = world_size, ppu = ppu,
                       num_particles = num_particles,
                       num_iterations = num_iterations,
