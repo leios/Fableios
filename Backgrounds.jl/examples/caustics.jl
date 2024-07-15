@@ -26,7 +26,7 @@ function test_caustics(num_particles, num_iterations, waves,
     ppu = 500
     bl = ColorLayer(RGB{Float32}(0,0,0); world_size = world_size, ppu = ppu)
 
-    square = define_circle(color = Shaders.white)
+    square = create_circle(color = Shaders.white)
     H_post = fo(Caustics.pool_caustics(waves = waves))
     fl = FableLayer(H = square, H_post = H_post,
                       world_size = world_size, ppu = ppu,

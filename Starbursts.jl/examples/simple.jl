@@ -1,7 +1,7 @@
 using Fable, Images, Starbursts
 
 function simple_example(num_particles, num_iterations;
-                        shape = define_rectangle(color = Shaders.black),
+                        shape = create_rectangle(color = Shaders.black),
                         ArrayType = Array, num_frames = 10,
                         output_type = :video,
                         starburst = simple_starburst, 
@@ -47,7 +47,7 @@ function simple_example(num_particles, num_iterations;
 end
 
 @info("Created function simple_example(num_particles, num_iterations;
-                                      shape = define_rectangle(...),
+                                      shape = create_rectangle(...),
                                       ArrayType = Array, num_frames = 10,
                                       output_type = :video,
                                       starburst = simple_starburst, 

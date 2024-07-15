@@ -13,7 +13,7 @@ function wobbly_ball_example(num_particles, num_iterations;
     cl = ColorLayer(RGB(0,0,0); ppu = ppu, world_size = world_size,
                     ArrayType = ArrayType)
 
-    circle = define_circle(color = Shaders.white, radius = ball_radius,
+    circle = create_circle(color = Shaders.white, radius = ball_radius,
                            position = ball_position)
 
     smear = fo(Smears.stretch_and_rotate(scale = scale,

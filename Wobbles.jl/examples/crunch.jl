@@ -6,7 +6,7 @@ function crunch_example(num_particles, num_iterations;
                         wobble_direction = 0.0,
                         object_height = 2, object_width = 0.5)
 
-    shape = define_rectangle(color = Shaders.black,
+    shape = create_rectangle(color = Shaders.black,
                              scale_y = object_height, scale_x = 0.1)
 
     world_size = (9, 16)

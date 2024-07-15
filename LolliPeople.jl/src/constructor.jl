@@ -1,6 +1,6 @@
 export LolliLayer, LolliPerson, set_transforms!, rebuild_operators!
 
-function define_lolli_Hs(transforms, post_transforms)
+function create_lolli_Hs(transforms, post_transforms)
 
     kept_transforms = FableOperator[]
     keep_post_transforms = false
@@ -108,17 +108,17 @@ function LolliLayer(; scale = 1.0,
 
     postprocessing_steps = vcat([CopyToCanvas()], postprocessing_steps)
     layer_position = (foot_position[1] - scale*0.5, foot_position[2])
-    body = define_rectangle(; position = body_position,
+    body = create_rectangle(; position = body_position,
                               rotation = 0.0,
                               scale_x = body_width,
                               scale_y = body_height,
                               color = body_color)
 
-    head = define_circle(; position = head_position,
+    head = create_circle(; position = head_position,
                            radius = head_radius,
                            color = (body_color, eye_fum))
 
-    H, H_post = define_lolli_Hs([pre_objects..., body, head, post_objects...],
+    H, H_post = create_lolli_Hs([pre_objects..., body, head, post_objects...],
                                 [pre_object_transforms..., body_transforms,
                                  head_transforms, post_object_transforms...])
 
@@ -254,7 +254,7 @@ function reset_transforms!(lolli; layers = [:head, :body])
 end
 
 function rebuild_operators!(lolli)
-    H, H_post = define_lolli_Hs([lolli.pre_objects...,
+    H, H_post = create_lolli_Hs([lolli.pre_objects...,
                                  lolli.body, lolli.head,
                                  lolli.post_objects...],
                                 [lolli.pre_object_transforms...,

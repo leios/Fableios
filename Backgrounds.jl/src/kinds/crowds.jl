@@ -117,6 +117,6 @@ end
 function create_bench(; location = (0,0), width = 0.5, height = 0.25,
                         color = bench_shader(scale = height, 
                                              y_location = location[1]))
-    return define_rectangle(; scale_y = height, scale_x = width, color = color,
+    return create_rectangle(; scale_y = height, scale_x = width, color = color,
                               position = (height*0.5, 0))
 end

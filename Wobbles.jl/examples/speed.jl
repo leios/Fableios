@@ -1,7 +1,7 @@
 using Fable, Wobbles, Colors
 
 function speed_example(num_particles, num_iterations;
-                       shape = define_circle(color = Shaders.black),
+                       shape = create_circle(color = Shaders.black),
                        ArrayType = Array, num_frames = 10,
                        output_type = :video,
                        wobble = floppy_speed, 
@@ -51,7 +51,7 @@ function speed_example(num_particles, num_iterations;
 end
 
 @info("Created function speed_example(num_particles, num_iterations;
-                                     shape = define_circle(...),
+                                     shape = create_circle(...),
                                      ArrayType = Array, num_frames = 10,
                                      output_type = :video,
                                      wobble = floppy_speed, 

@@ -65,7 +65,7 @@ function tossed_ball_example(num_particles, num_iterations;
                              horizon = world_size[1]*0.5);
                      ppu = ppu, world_size = world_size, ArrayType = ArrayType)
     
-    circle = define_circle(color = Shaders.white, radius = ball_radius,
+    circle = create_circle(color = Shaders.white, radius = ball_radius,
                            position = ball_position)
 
     smear = fo(Smears.stretch_and_rotate(scale = scale,
