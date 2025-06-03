@@ -1,0 +1,16 @@
+name = "FableIntro"
+uuid = "3502a6ff-d549-4faa-80de-44414ec5ee74"
+authors = ["James Schloss <jrs.schloss@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+Fable = "a3ea4736-0a3b-4c29-ac8a-20364318a635"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+
+[compat]
+Colors = "0.13.1"
+Fable = "0.0.2"
+Random = "1.11.0"
+Revise = "3.8.0"
