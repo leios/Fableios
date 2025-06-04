@@ -22,7 +22,6 @@ end
 #------------------------------------------------------------------------------#
 
 comet_wiggle = @fum function comet_wiggle(y, x; comet_distance = 0.5,
-                                          comet_angle = -0.25*pi,
                                           wiggle_frequency = 20,
                                           wiggle_amplitude = 0.01)
     r = sqrt(x*x + y*y)
@@ -88,12 +87,14 @@ comet_shape = @fum function comet_shape(y, x;
     x = v2
 
     angle = atan(y,x)
-    if y < 0
-        angle += 2pi
+    if y > 0
+        angle -= 2pi
     end
 
-    if x >= 0 && y <= 0 && y >= primitive_radius * comet_size && angle > pi
-        angle = -10
+    angle += 2*pi*trunc(comet_angle / (2*pi))
+
+    if x >= 0 && y <= 0 && y >= -primitive_radius * comet_size
+        angle -= 2pi
     end
     if x >= 0 && y >= 0 && y <= primitive_radius * comet_size
         angle += 2pi
@@ -292,7 +293,7 @@ function create_keyframes()
                 "stars" => 2.333333,
                 "comet" => 3.161616,
                 "rings" => 3.66666,
-                "kinda" => 7.2)
+                "kinda" => 7.266)
 end
 
 function space_example(num_particles, num_iterations;
@@ -381,7 +382,7 @@ function space_example(num_particles, num_iterations;
     while curr_time < keyframes["kinda"]
         set!(planet_rotation, 0.5*curr_time*2*pi)
         set!(ring_wobble, (-0.1*pi)+0.1*sin(0.5*curr_time*2*pi))
-        set!(comet_angle, (2*pi-(0.5*curr_time*2*pi)%(2*pi)))
+        set!(comet_angle, -(0.5*curr_time*2*pi))
         #println(round(Int,curr_time * Fable.FPS))
         #println(value(comet_angle))
 
